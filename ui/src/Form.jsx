@@ -115,7 +115,7 @@ export default function FormBody({ id, kind }) {
   const [pv, setPv] = useState(false), [review, setReview] = useState(null); // review = the new bot's body, shown before it is created
   const [px, setPx] = useState({ price: v ? v.price : null, contract: null });
   const [trackPref, setTrackPref] = useState(true), [limitNow, setLimitNow] = useState('');
-  const [ck, setCk] = useState({ cls: 'hint', text: 'Checks the symbol exists on the broker and allows your leverage.', busy: false });
+  const [ck, setCk] = useState({ cls: 'hint', text: '', busy: false, r: null }); // r = the broker's answer (max leverage)
   const formRef = useRef(null), limitRef = useRef(null);
   const set = patch => setF(x => ({ ...x, ...patch }));
 
@@ -173,6 +173,9 @@ export default function FormBody({ id, kind }) {
     }, 300);
     return () => clearTimeout(t);
   }, [sym, f.broker]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => { setCk({ cls: 'hint', text: '', busy: false, r: null }); }, [sym, f.broker]);
+  useEffect(() => { setErr(''); }, [f, groups]); // an error is about the values it was shown for
 
   // ---- the limit price follows the market (refreshed every 5 s) until you type one or press the target ----
   const tracking = !isAlert && f.entryMode === 'maker' && trackPref;
@@ -237,10 +240,12 @@ export default function FormBody({ id, kind }) {
 
   // ---- symbol check (fresh broker read) ----
   const checkSym = async () => {
-    if (!SYM.test(sym)) return setCk({ cls: 'hint down', text: 'Symbol must look like SMHUSDT.' });
-    setCk({ cls: 'hint', text: 'Checking...', busy: true });
-    try { const r = await getJSON(`/api/check/${sym}?broker=${f.broker || 'bitget'}&leverage=${Math.round(+f.leverage) || ''}`); setCk({ cls: 'hint' + (r.ok ? '' : ' down'), text: (r.ok ? '✓ ' : '✗ ') + r.message }); }
-    catch (e) { setCk({ cls: 'hint down', text: 'Check failed: ' + e.message }); }
+    if (!SYM.test(sym)) return setCk({ cls: 'hint down', text: 'Symbol must look like SMHUSDT.', r: null });
+    setCk({ cls: 'hint', text: 'Checking…', busy: true, r: null });
+    try {
+      const r = await getJSON(`/api/check/${sym}?broker=${f.broker || 'bitget'}&leverage=`); // leverage is judged at the Leverage field
+      setCk(r.status === 'normal' && r.ok ? { cls: 'hint', text: `✓ Trading · ${fx(r.price)}`, r } : { cls: 'hint down', text: `✗ ${r.message}`, r: null });
+    } catch (e) { setCk({ cls: 'hint down', text: `Check failed: ${e.message}`, r: null }); }
   };
 
   // ---- save ----
@@ -250,6 +255,7 @@ export default function FormBody({ id, kind }) {
     const valid = form.reportValidity();
     hidden.forEach(x => x.classList.add('hidden'));
     if (!valid) return;
+    if (!isAlert && !editing && low) { setErr(`Total investment is below the minimum ${fx(minInv)} USDT.`); setPart('rest'); return; }
     let limitPx = f.limitPx;
     if (tracking) { try { limitPx = String(await readPx()); } catch (e) { setErr(e.message); return; } setTrackPref(false); } // following: the limit is the price at this second
     const body = { name, tf: f.tf, usMarketHoursOnly: f.usMarketHoursOnly, entryMode: f.entryMode, limitPx };
@@ -366,33 +372,32 @@ export default function FormBody({ id, kind }) {
         <div className="card-head"><span className="num n2">2</span>Capital</div>
         <div className="fgrid">
           {numField({ k: 'investment', label: 'Total investment', unit: 'USDT', extra: { step: 'any', min: 1 },
-            hint: <div className={`hint ${low ? 'down' : ''}`}>{minInv === null ? 'Split over all orders automatically.' : `Minimum ${fx(minInv)} USDT at ${fx(px.price)}. ${low ? 'Below it the bot is still created and asks you to add funds when an order cannot open.' : 'Split over all orders automatically.'}`}</div> })}
-          {numField({ k: 'leverage', label: 'Leverage', unit: 'x', extra: { step: 1, min: 1 } })}
+            hint: minInv !== null ? <div className={`hint ${low ? 'down' : ''}`}>Min {fx(minInv)} USDT</div> : null })}
+          {numField({ k: 'leverage', label: 'Leverage', unit: 'x', extra: { step: 1, min: 1, ...(ck.r && ck.r.maxLever ? { max: ck.r.maxLever } : {}) },
+            hint: ck.r && ck.r.maxLever ? <div className={`hint ${+f.leverage > ck.r.maxLever ? 'down' : ''}`}>Max {ck.r.maxLever}x</div> : null })}
           <div className="field"><label className="l" htmlFor="f-mm">Margin mode</label><select id="f-mm" value={f.marginMode} disabled={lockedKey('marginMode')} onChange={e => set({ marginMode: e.target.value })}><option value="crossed">Cross</option><option value="isolated">Isolated</option></select></div>
         </div>
       </fieldset>
       <fieldset className={`card ${showPart('rest')}`}>
         <div className="card-head"><span className="num n3">3</span>Averaging</div>
         <div className="fgrid">
-          {numField({ k: 'stepPct', label: 'Price step', unit: '%', extra: { step: 'any', min: 0.01 }, hint: <div className="hint">Every add is measured from the entry price.</div> })}
+          {numField({ k: 'stepPct', label: 'Price step', unit: '%', extra: { step: 'any', min: 0.01 } })}
           {numField({ k: 'stepMult', label: 'Price step multiplier', unit: '×', extra: { step: 'any', min: 1 } })}
           {numField({ k: 'amountMult', label: 'Order size multiplier', unit: '×', extra: { step: 'any', min: 1 } })}
           {numField({ k: 'maxAdds', label: 'Max add orders', extra: { step: 1, min: 0, max: 20 } })}
         </div>
-        <p className="faint" style={{ margin: '12px 0 0' }}>{ok ? `${rows.length} orders · adds cover a drop to −${fx(last.drop, 1)}%` : 'Fill in the martingale fields to preview the order plan.'}</p>
       </fieldset>
       <fieldset className={`card ${showPart('rest')}`} id="martFs">
         <div className="card-head"><span className="num n4">4</span>Take profit &amp; execution</div>
         <div className="fgrid">
-          {numField({ k: 'tpPct', label: 'Take profit', unit: '%', extra: { step: 'any', min: 0.01 }, hint: <div className="hint">Above the average price.</div> })}
-          <div className="field"><label className="l" htmlFor="f-cyc">Max cycles</label><input id="f-cyc" type="number" step="1" min="0" max="1000" value={f.maxCycles} onChange={e => set({ maxCycles: e.target.value })} />
-            <div className="hint">0 = no limit.</div></div>
+          {numField({ k: 'tpPct', label: 'Take profit', unit: '%', extra: { step: 'any', min: 0.01 } })}
+          <div className="field"><label className="l" htmlFor="f-cyc">Max cycles</label><input id="f-cyc" type="number" step="1" min="0" max="1000" value={f.maxCycles} placeholder="0 = no limit" onChange={e => set({ maxCycles: e.target.value })} /></div>
           <div className="field full"><label className="l">Order execution</label>
             <div className="choice" role="radiogroup" aria-label="Order execution">
               <label><input type="radio" name="fillMode" checked={f.fillMode === 'manual'} disabled={!!editing} onChange={() => set({ fillMode: 'manual' })} />Manual</label>
               <label><input type="radio" name="fillMode" checked={f.fillMode === 'live'} disabled={!!editing} onChange={() => set({ fillMode: 'live' })} />Automatic — Live</label>
             </div>
-            <div className="hint">Manual: you place each order and enter its real fill. Automatic: the bot places the orders on Bitget with real money.</div></div>
+          </div>
         </div>
       </fieldset>
       </>}
