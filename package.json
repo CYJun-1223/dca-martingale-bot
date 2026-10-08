@@ -1,0 +1,29 @@
+{
+  "name": "dca-martingale-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DCA martingale bots for Bitget / Binance USDT-M futures, with a phone dashboard",
+  "main": "runner.js",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "check": "node bot.js check",
+    "trace": "node bot.js trace",
+    "status": "node bot.js status",
+    "start": "node runner.js",
+    "web": "node web.js",
+    "test": "node test/units.js && node test/sim.js && node test/parity.js && node test/db.js",
+    "build": "vite build",
+    "dev:ui": "vite"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.2",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "vite": "^8.3.3"
+  },
+  "dependencies": {
+    "pg": "^8.23.1"
+  }
+}

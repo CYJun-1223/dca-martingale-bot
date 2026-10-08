@@ -1,0 +1,135 @@
+//@version=6
+// Entry candle: tick the trigger indicators you want.
+// "All selected": each ticked indicator is remembered when it fires (a repeat just counts once); when every ticked
+// indicator has fired, that candle gets a dot, then everything resets and waits again.
+// "Any selected": every candle where a ticked indicator fires gets a dot.
+// The alert message names the indicator(s).
+// Defaults = the current bot: BOLL(20, 2), close crosses below the lower band.
+// Use BITGET:SOXXUSDT.P on the same timeframe as the bot (1H).
+indicator("Entry candle", overlay=true, max_labels_count=500)
+
+useBollRev = input.bool(true,  "BOLL revert (close crosses below the lower band)", group="Trigger indicators")
+useBollBrk = input.bool(false, "BOLL break (close crosses above the upper band)", group="Trigger indicators")
+useMa      = input.bool(false, "MA cross (fast crosses above slow)", group="Trigger indicators")
+useMacd    = input.bool(false, "MACD cross (line crosses above signal)", group="Trigger indicators")
+useRsi     = input.bool(false, "RSI cross up (RSI rises through the level)", group="Trigger indicators")
+
+mode   = input.string("All selected", "Mark the candle when", options=["All selected", "Any selected"], group="Trigger indicators")
+expiry = input.int(3, "Forget a signal after N candles (0 = never)", minval=0, group="Trigger indicators", tooltip="Only for All selected. 0 keeps a signal until the others have fired, however long that takes. With a number, a signal older than that many candles no longer counts (default 3, so a lone old signal never pairs with a new one).")
+
+bollLen  = input.int(20, "BOLL period", minval=2, group="BOLL")
+bollMult = input.float(2.0, "BOLL multiplier", minval=0.1, step=0.1, group="BOLL")
+maKind   = input.string("sma", "MA type", options=["sma", "ema"], group="MA cross")
+maFast   = input.int(20, "Fast", minval=1, group="MA cross")
+maSlow   = input.int(50, "Slow", minval=2, group="MA cross")
+macdFast = input.int(12, "Fast", minval=1, group="MACD cross")
+macdSlow = input.int(26, "Slow", minval=2, group="MACD cross")
+macdSig  = input.int(9, "Signal", minval=1, group="MACD cross")
+rsiLen   = input.int(14, "RSI period", minval=2, group="RSI cross up")
+rsiLevel = input.float(30.0, "RSI level", group="RSI cross up")
+
+[bbMid, bbUp, bbLo] = ta.bb(close, bollLen, bollMult)
+maFastE = ta.ema(close, maFast)
+maFastM = ta.sma(close, maFast)
+maSlowE = ta.ema(close, maSlow)
+maSlowM = ta.sma(close, maSlow)
+maFastS = maKind == "ema" ? maFastE : maFastM
+maSlowS = maKind == "ema" ? maSlowE : maSlowM
+[macdLine, macdSignal, macdHist] = ta.macd(close, macdFast, macdSlow, macdSig)
+rsiVal = ta.rsi(close, rsiLen)
+
+bollRevert = close[1] >= bbLo[1] and close < bbLo
+bollBreak  = close[1] <= bbUp[1] and close > bbUp
+maCross    = ta.crossover(maFastS, maSlowS)
+macdCross  = ta.crossover(macdLine, macdSignal)
+rsiCross   = ta.crossover(rsiVal, rsiLevel)
+
+// ---------- which indicators have fired ----------
+f_add(s, n) => s == "" ? n : s + " + " + n
+needAll = mode == "All selected"
+
+// remembered signals (since the last reset) and the candle each one last fired on
+var bool aRev = false
+var bool aBrk = false
+var bool aMa = false
+var bool aMacd = false
+var bool aRsi = false
+var int tRev = 0
+var int tBrk = 0
+var int tMa = 0
+var int tMacd = 0
+var int tRsi = 0
+
+// forget old signals
+if expiry > 0
+    if aRev and bar_index - tRev >= expiry
+        aRev := false
+    if aBrk and bar_index - tBrk >= expiry
+        aBrk := false
+    if aMa and bar_index - tMa >= expiry
+        aMa := false
+    if aMacd and bar_index - tMacd >= expiry
+        aMacd := false
+    if aRsi and bar_index - tRsi >= expiry
+        aRsi := false
+
+// remember what fires on this candle (a repeat of the same indicator just refreshes it, it still counts once)
+string firedNames = ""
+if useBollRev and bollRevert
+    aRev := true
+    tRev := bar_index
+    firedNames := f_add(firedNames, "BOLL revert")
+if useBollBrk and bollBreak
+    aBrk := true
+    tBrk := bar_index
+    firedNames := f_add(firedNames, "BOLL break")
+if useMa and maCross
+    aMa := true
+    tMa := bar_index
+    firedNames := f_add(firedNames, "MA cross")
+if useMacd and macdCross
+    aMacd := true
+    tMacd := bar_index
+    firedNames := f_add(firedNames, "MACD cross")
+if useRsi and rsiCross
+    aRsi := true
+    tRsi := bar_index
+    firedNames := f_add(firedNames, "RSI cross up")
+
+string tickedNames = ""
+if useBollRev
+    tickedNames := f_add(tickedNames, "BOLL revert")
+if useBollBrk
+    tickedNames := f_add(tickedNames, "BOLL break")
+if useMa
+    tickedNames := f_add(tickedNames, "MA cross")
+if useMacd
+    tickedNames := f_add(tickedNames, "MACD cross")
+if useRsi
+    tickedNames := f_add(tickedNames, "RSI cross up")
+
+anyTicked = tickedNames != ""
+allMet = anyTicked and (not useBollRev or aRev) and (not useBollBrk or aBrk) and (not useMa or aMa) and (not useMacd or aMacd) and (not useRsi or aRsi)
+completed = needAll ? allMet and firedNames != "" : firedNames != ""
+names = needAll ? tickedNames : firedNames
+entry = completed and barstate.isconfirmed
+
+// everything met: reset and wait for the indicators again
+if needAll and allMet
+    aRev := false
+    aBrk := false
+    aMa := false
+    aMacd := false
+    aRsi := false
+
+// the ticked indicators on the chart (RSI and MACD live in their own panes, so they only mark the candle)
+showBoll = useBollRev or useBollBrk
+plot(showBoll ? bbUp : na, "BOLL upper", color=color.new(color.gray, 30))
+plot(showBoll ? bbLo : na, "BOLL lower", color=color.new(color.gray, 30))
+plot(useMa ? maFastS : na, "MA fast", color=color.orange)
+plot(useMa ? maSlowS : na, "MA slow", color=color.blue)
+
+// the entry candle: just a dot under it
+plotshape(entry, "Entry candle", shape.circle, location.belowbar, color.green, size=size.tiny)
+if entry
+    alert(syminfo.ticker + " " + timeframe.period + ": " + names + " at " + str.tostring(close, format.mintick), alert.freq_once_per_bar_close)

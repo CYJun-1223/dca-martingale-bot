@@ -1,0 +1,13 @@
+# secrets (.env.example is the template)
+.env
+.env.*
+!.env.example
+# installed / built
+node_modules/
+dist/
+# written while the bots run: logs, indicator traces, the pause switch
+*.log
+trace/
+STOP_ALL
+# browser test output
+.playwright-mcp/

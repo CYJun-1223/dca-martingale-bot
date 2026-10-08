@@ -1,0 +1,198 @@
+//@version=6
+// DCA ladder alerts: the SOXX bot's entry rule and martingale ladder on a TradingView chart.
+// One alert ("Any alert() function call") sends: ENTRY signal (with the first add levels), ADD level reached, TAKE PROFIT.
+// Defaults = the current bot: BOLL(20, 2) close crosses below the lower band, 1000 USDT, 3x, 20 adds,
+// step 0.8% x1.04, amount x1.12, TP 2.4% above the average price.
+// Put it on BITGET:SOXXUSDT.P (24/7) with the SAME timeframe as the bot's K-line (1H).
+indicator("DCA ladder alerts", shorttitle="DCA alerts", overlay=true)
+
+// ---------- entry conditions (same types as the bot) ----------
+typeA = input.string("BOLL revert", "Condition A", options=["BOLL revert", "BOLL break", "MA cross", "MACD cross", "RSI cross up", "Off"], group="Entry", tooltip="BOLL revert = close crosses below the lower band. BOLL break = close crosses above the upper band. MA cross = fast above slow. MACD cross = line above signal. RSI cross up = RSI rises through the level.")
+typeB = input.string("Off", "Condition B (optional)", options=["BOLL revert", "BOLL break", "MA cross", "MACD cross", "RSI cross up", "Off"], group="Entry")
+logic = input.string("OR", "A and B combined with", options=["OR", "AND"], group="Entry")
+win   = input.int(3, "AND window (bars)", minval=1, maxval=50, group="Entry", tooltip="With AND, both conditions must fire within this many bars of each other, at least one on the current bar.")
+
+// ---------- indicator settings (shared by A and B) ----------
+bollLen  = input.int(20, "BOLL period", minval=2, group="Indicator settings")
+bollMult = input.float(2.0, "BOLL multiplier", minval=0.1, step=0.1, group="Indicator settings")
+maKind   = input.string("sma", "MA type", options=["sma", "ema"], group="Indicator settings")
+maFast   = input.int(20, "MA fast", minval=1, group="Indicator settings")
+maSlow   = input.int(50, "MA slow", minval=2, group="Indicator settings")
+macdFast = input.int(12, "MACD fast", minval=1, group="Indicator settings")
+macdSlow = input.int(26, "MACD slow", minval=2, group="Indicator settings")
+macdSig  = input.int(9, "MACD signal", minval=1, group="Indicator settings")
+rsiLen   = input.int(14, "RSI period", minval=2, group="Indicator settings")
+rsiLevel = input.float(30.0, "RSI level", group="Indicator settings")
+volMin   = input.float(0.0, "Volatility filter: min ATR % of price (0 = off)", minval=0, step=0.1, group="Indicator settings")
+volMax   = input.float(0.0, "Volatility filter: max ATR % of price (0 = off)", minval=0, step=0.1, group="Indicator settings")
+volLen   = input.int(14, "Volatility ATR period", minval=2, group="Indicator settings")
+
+// ---------- DCA ladder (same fields as the bot) ----------
+investment = input.float(1000.0, "Investment (USDT, all orders)", minval=1, group="DCA ladder")
+leverage   = input.float(3.0, "Leverage", minval=1, group="DCA ladder")
+maxAdds    = input.int(20, "Max add orders", minval=0, maxval=20, group="DCA ladder")
+stepPct    = input.float(0.8, "Price step %", minval=0.01, step=0.01, group="DCA ladder", tooltip="Add k triggers this % below the previous order; the step grows by the multiple each add.")
+stepMult   = input.float(1.04, "Price step multiple", minval=1, step=0.01, group="DCA ladder")
+amountMult = input.float(1.12, "Amount multiple", minval=1, step=0.01, group="DCA ladder")
+tpPct      = input.float(2.4, "Take profit % above average", minval=0.01, step=0.1, group="DCA ladder")
+qtyDp      = input.int(2, "Quantity decimals (the symbol's size step)", minval=0, maxval=8, group="DCA ladder", tooltip="SOXXUSDT trades in steps of 0.01, so 2.")
+showTable  = input.bool(true, "Show the order table", group="Display")
+showBands  = input.bool(true, "Show BOLL bands", group="Display")
+
+// ---------- indicators ----------
+[bbMid, bbUp, bbLo] = ta.bb(close, bollLen, bollMult)
+bollRevert = close[1] >= bbLo[1] and close < bbLo
+bollBreak  = close[1] <= bbUp[1] and close > bbUp
+maFastE = ta.ema(close, maFast)
+maFastM = ta.sma(close, maFast)
+maSlowE = ta.ema(close, maSlow)
+maSlowM = ta.sma(close, maSlow)
+maFastS = maKind == "ema" ? maFastE : maFastM
+maSlowS = maKind == "ema" ? maSlowE : maSlowM
+maCross = ta.crossover(maFastS, maSlowS)
+[macdLine, macdSignal, macdHist] = ta.macd(close, macdFast, macdSlow, macdSig)
+macdCross = ta.crossover(macdLine, macdSignal)
+rsiVal = ta.rsi(close, rsiLen)
+rsiCross = ta.crossover(rsiVal, rsiLevel)
+
+sigA = typeA == "BOLL revert" ? bollRevert : typeA == "BOLL break" ? bollBreak : typeA == "MA cross" ? maCross : typeA == "MACD cross" ? macdCross : typeA == "RSI cross up" ? rsiCross : false
+sigB = typeB == "BOLL revert" ? bollRevert : typeB == "BOLL break" ? bollBreak : typeB == "MA cross" ? maCross : typeB == "MACD cross" ? macdCross : typeB == "RSI cross up" ? rsiCross : false
+aOn = typeA != "Off"
+bOn = typeB != "Off"
+barsA = ta.barssince(sigA)
+barsB = ta.barssince(sigB)
+anyNow = (aOn and sigA) or (bOn and sigB)
+sigOK = logic == "OR" ? anyNow : anyNow and (not aOn or barsA < win) and (not bOn or barsB < win)
+
+atrPct = ta.atr(volLen) / close * 100
+volOK = (volMin <= 0 or atrPct >= volMin) and (volMax <= 0 or atrPct <= volMax)
+entrySig = sigOK and volOK
+
+// ---------- ladder maths (the bot's rules) ----------
+float wsum = 0.0
+for j = 0 to maxAdds
+    wsum += math.pow(amountMult, j)
+firstMargin = investment / wsum
+
+// price of order k when the first order was at `first` (k = 0 is the first order)
+f_levelPx(first, k, sp, sm) =>
+    float px = first
+    if k >= 1
+        for j = 1 to k
+            px := px * (1 - sp * math.pow(sm, j - 1) / 100)
+    px
+
+// quantity as clean text (no float noise)
+f_s(x, dp) => str.tostring(math.round(x * math.pow(10, dp)) / math.pow(10, dp))
+
+// quantity rounded down to the size step
+f_qty(m, px, lev, dp) => math.floor(m * lev / px * math.pow(10, dp) + 1e-9) / math.pow(10, dp)
+
+// ---------- simulated cycle: assumes every add fills at its level (like a limit order) ----------
+var bool active = false
+var float cQty = 0.0
+var float cCost = 0.0
+var float firstPx = na
+var int adds = 0
+var int shortAt = -1
+
+bool entryNow = false
+bool tpNow = false
+int addsNow = 0
+string msg = ""
+t = syminfo.ticker + " " + timeframe.period
+
+if active
+    float avgStart = cCost / cQty
+    float tpStart = avgStart * (1 + tpPct / 100)
+    if high >= tpStart // like the bot: take profit is checked before adds
+        tpNow := true
+        msg += "TAKE PROFIT " + t + ": sell " + f_s(cQty, qtyDp) + " @ " + str.tostring(tpStart, format.mintick) + " (avg " + str.tostring(avgStart, format.mintick) + "), P&L about " + str.tostring((tpStart - avgStart) * cQty, "#.##") + " USDT. Cancel any open add orders.\n"
+        active := false
+        cQty := 0.0
+        cCost := 0.0
+        adds := 0
+        shortAt := -1
+    else
+        while adds < maxAdds and low <= f_levelPx(firstPx, adds + 1, stepPct, stepMult)
+            int k = adds + 1
+            float px = f_levelPx(firstPx, k, stepPct, stepMult)
+            float m = firstMargin * math.pow(amountMult, k)
+            float q = f_qty(m, px, leverage, qtyDp)
+            if q <= 0
+                if shortAt != k
+                    msg += "ADD #" + str.tostring(k) + " " + t + " reached " + str.tostring(px, format.mintick) + " but the planned size is below the minimum. Add funds to the bot.\n"
+                    shortAt := k
+                break
+            cQty += q
+            cCost += q * px
+            adds += 1
+            addsNow += 1
+            shortAt := -1
+            float avgNew = cCost / cQty
+            msg += "ADD #" + str.tostring(k) + " " + t + ": buy " + f_s(q, qtyDp) + " @ " + str.tostring(px, format.mintick) + " (margin " + str.tostring(m, "#.##") + " USDT). Average now " + str.tostring(avgNew, format.mintick) + ", TP " + str.tostring(avgNew * (1 + tpPct / 100), format.mintick) + ".\n"
+
+if not active and entrySig
+    float q0 = f_qty(firstMargin, close, leverage, qtyDp)
+    if q0 > 0
+        active := true
+        entryNow := true
+        firstPx := close
+        cQty := q0
+        cCost := q0 * close
+        adds := 0
+        shortAt := -1
+        string ladder = ""
+        for k = 1 to math.max(1, math.min(3, maxAdds))
+            if k > maxAdds
+                break
+            float lp = f_levelPx(close, k, stepPct, stepMult)
+            ladder += " #" + str.tostring(k) + " " + f_s(f_qty(firstMargin * math.pow(amountMult, k), lp, leverage, qtyDp), qtyDp) + " @ " + str.tostring(lp, format.mintick) + ";"
+        msg += "ENTRY " + t + ": open " + f_s(q0, qtyDp) + " @ " + str.tostring(close, format.mintick) + " (margin " + str.tostring(firstMargin, "#.##") + " USDT). Next adds:" + ladder + " TP " + str.tostring(tpPct) + "% above average.\n"
+    else
+        msg += "ENTRY signal " + t + " but the first order (" + str.tostring(firstMargin, "#.##") + " USDT margin) is below the minimum size. Raise the investment.\n"
+
+// one alert per bar close, with everything that happened on that bar
+if msg != "" and barstate.isconfirmed
+    alert(msg, alert.freq_once_per_bar_close)
+
+// ---------- chart ----------
+avgEnd = active ? cCost / cQty : na
+tpEnd = active ? avgEnd * (1 + tpPct / 100) : na
+nextEnd = active and adds < maxAdds ? f_levelPx(firstPx, adds + 1, stepPct, stepMult) : na
+plot(avgEnd, "Average price", color=color.blue, linewidth=2, style=plot.style_linebr)
+plot(tpEnd, "Take profit", color=color.green, linewidth=1, style=plot.style_linebr)
+plot(nextEnd, "Next add", color=color.orange, linewidth=1, style=plot.style_linebr)
+plot(showBands ? bbUp : na, "BOLL upper", color=color.new(color.gray, 40))
+plot(showBands ? bbLo : na, "BOLL lower", color=color.new(color.gray, 40))
+plotshape(entryNow, "Entry", shape.triangleup, location.belowbar, color.green, size=size.small, text="Entry")
+plotshape(addsNow > 0, "Add reached", shape.circle, location.belowbar, color.orange, size=size.tiny)
+plotshape(tpNow, "Take profit hit", shape.flag, location.abovebar, color.green, size=size.small, text="TP")
+
+// order table: the open cycle (filled orders greyed), or a preview from the last close
+var table tbl = table.new(position.top_right, 6, 23, border_width=1)
+if barstate.islast and showTable
+    float base = active ? firstPx : close
+    table.cell(tbl, 0, 0, active ? "Cycle open" : "Preview", text_color=color.white, bgcolor=color.new(color.gray, 20), text_size=size.small)
+    table.cell(tbl, 1, 0, "Price", text_color=color.white, bgcolor=color.new(color.gray, 20), text_size=size.small)
+    table.cell(tbl, 2, 0, "Qty", text_color=color.white, bgcolor=color.new(color.gray, 20), text_size=size.small)
+    table.cell(tbl, 3, 0, "Margin", text_color=color.white, bgcolor=color.new(color.gray, 20), text_size=size.small)
+    table.cell(tbl, 4, 0, "Avg", text_color=color.white, bgcolor=color.new(color.gray, 20), text_size=size.small)
+    table.cell(tbl, 5, 0, "TP", text_color=color.white, bgcolor=color.new(color.gray, 20), text_size=size.small)
+    float tq = 0.0
+    float tc = 0.0
+    for j = 0 to maxAdds
+        float rp = f_levelPx(base, j, stepPct, stepMult)
+        float rm = firstMargin * math.pow(amountMult, j)
+        float rq = f_qty(rm, rp, leverage, qtyDp)
+        tq += rq
+        tc += rq * rp
+        bool filled = active and j <= adds
+        color fg = filled ? color.gray : color.white
+        color bg = filled ? color.new(color.gray, 85) : color.new(color.black, 100)
+        table.cell(tbl, 0, j + 1, j == 0 ? "First" : "#" + str.tostring(j), text_color=fg, bgcolor=bg, text_size=size.small)
+        table.cell(tbl, 1, j + 1, str.tostring(rp, format.mintick), text_color=fg, bgcolor=bg, text_size=size.small)
+        table.cell(tbl, 2, j + 1, f_s(rq, qtyDp), text_color=fg, bgcolor=bg, text_size=size.small)
+        table.cell(tbl, 3, j + 1, str.tostring(rm, "#.##"), text_color=fg, bgcolor=bg, text_size=size.small)
+        table.cell(tbl, 4, j + 1, tq > 0 ? str.tostring(tc / tq, format.mintick) : "-", text_color=fg, bgcolor=bg, text_size=size.small)
+        table.cell(tbl, 5, j + 1, tq > 0 ? str.tostring(tc / tq * (1 + tpPct / 100), format.mintick) : "-", text_color=fg, bgcolor=bg, text_size=size.small)

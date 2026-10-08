@@ -1,0 +1,121 @@
+//@version=6
+// Volatility filter lab: BOLL revert, MA cross and MACD cross with the bot's default settings, each with its own
+// volatility filter (ATR as % of price on the chart's candles). Adjust the limits and watch the chart:
+//   dot at the bottom edge = the indicator fired and passed its filter (this would alert)
+//   x at the bottom edge   = the indicator fired but its filter blocked it
+//   number under the candle = the ATR % at that candle, in the same colour as its icon (what the filter compared with your Min / Max)
+// The icons are pinned to the bottom edge of the chart, so they stay put when you scroll or zoom.
+// Colours: BOLL purple, MA blue, MACD orange.
+// Use BITGET:SOXXUSDT.P on the timeframe you want to test (the bot uses 1H).
+indicator("Volatility filter lab", shorttitle="Vol lab", overlay=true, max_labels_count=500)
+
+light = input.bool(true, "Colours for a light chart (off = dark chart)", group="Display")
+cBoll = light ? #7e22ce : #b794f6   // purple
+cMa   = light ? #1d4ed8 : #6ea8fe   // blue
+cMacd = light ? #ea580c : #fdba74   // orange
+
+// ---------- BOLL revert: close crosses below the lower band ----------
+useBoll  = input.bool(true, "On", group="BOLL revert")
+bollLen  = input.int(20, "Period", minval=2, group="BOLL revert")
+bollMult = input.float(2.0, "Multiplier", minval=0.1, step=0.1, group="BOLL revert")
+bollVMin = input.float(0.0, "Volatility min % (0 = off)", minval=0, step=0.05, group="BOLL revert")
+bollVMax = input.float(0.0, "Volatility max % (0 = off)", minval=0, step=0.05, group="BOLL revert")
+bollVLen = input.int(14, "ATR period", minval=2, group="BOLL revert")
+
+// ---------- MA cross: fast crosses above slow ----------
+useMa  = input.bool(true, "On", group="MA cross")
+maKind = input.string("sma", "Type", options=["sma", "ema"], group="MA cross")
+maFast = input.int(20, "Fast", minval=1, group="MA cross")
+maSlow = input.int(50, "Slow", minval=2, group="MA cross")
+maVMin = input.float(0.0, "Volatility min % (0 = off)", minval=0, step=0.05, group="MA cross")
+maVMax = input.float(0.0, "Volatility max % (0 = off)", minval=0, step=0.05, group="MA cross")
+maVLen = input.int(14, "ATR period", minval=2, group="MA cross")
+
+// ---------- MACD cross: line crosses above its signal ----------
+useMacd   = input.bool(true, "On", group="MACD cross")
+macdFast  = input.int(12, "Fast", minval=1, group="MACD cross")
+macdSlow  = input.int(26, "Slow", minval=2, group="MACD cross")
+macdSig   = input.int(9, "Signal", minval=1, group="MACD cross")
+macdVMin  = input.float(0.0, "Volatility min % (0 = off)", minval=0, step=0.05, group="MACD cross")
+macdVMax  = input.float(0.0, "Volatility max % (0 = off)", minval=0, step=0.05, group="MACD cross")
+macdVLen  = input.int(14, "ATR period", minval=2, group="MACD cross")
+
+markerSize = input.string("normal", "Size of the ATR numbers", options=["tiny", "small", "normal", "large", "huge"], group="Display")
+showNumbers = input.bool(true, "Write the ATR % on the candle (Pine cannot put a changing number on the bottom edge)", group="Display")
+showBlocked = input.bool(true, "Show signals blocked by the filter (faded x)", group="Display")
+alertOn     = input.bool(true, "Send an alert when a signal passes its filter", group="Display")
+
+// ---------- indicators ----------
+[bbMid, bbUp, bbLo] = ta.bb(close, bollLen, bollMult)
+maFastE = ta.ema(close, maFast)
+maFastM = ta.sma(close, maFast)
+maSlowE = ta.ema(close, maSlow)
+maSlowM = ta.sma(close, maSlow)
+maFastS = maKind == "ema" ? maFastE : maFastM
+maSlowS = maKind == "ema" ? maSlowE : maSlowM
+[macdLine, macdSignal, macdHist] = ta.macd(close, macdFast, macdSlow, macdSig)
+
+// ---------- volatility: ATR as % of the close ----------
+atrBoll = ta.atr(bollVLen)
+atrMa   = ta.atr(maVLen)
+atrMacd = ta.atr(macdVLen)
+pctBoll = atrBoll / close * 100
+pctMa   = atrMa / close * 100
+pctMacd = atrMacd / close * 100
+
+// inside the limits (a limit of 0 is off)
+f_ok(pct, mn, mx) => (mn <= 0 or pct >= mn) and (mx <= 0 or pct <= mx)
+
+// ---------- signals: fired, passed the filter, blocked by it (decided on the closed candle) ----------
+rawBoll  = useBoll and close[1] >= bbLo[1] and close < bbLo
+rawMa    = useMa and ta.crossover(maFastS, maSlowS)
+rawMacd  = useMacd and ta.crossover(macdLine, macdSignal)
+conf = barstate.isconfirmed
+passBoll  = rawBoll and conf and f_ok(pctBoll, bollVMin, bollVMax)
+passMa    = rawMa and conf and f_ok(pctMa, maVMin, maVMax)
+passMacd  = rawMacd and conf and f_ok(pctMacd, macdVMin, macdVMax)
+blockBoll = rawBoll and conf and not passBoll
+blockMa   = rawMa and conf and not passMa
+blockMacd = rawMacd and conf and not passMacd
+
+// ---------- chart ----------
+plot(useBoll ? bbUp : na, "BOLL upper", color=color.new(cBoll, 35))
+plot(useBoll ? bbLo : na, "BOLL lower", color=color.new(cBoll, 35))
+plot(useMa ? maFastS : na, "MA fast", color=color.new(cMa, 10))
+plot(useMa ? maSlowS : na, "MA slow", color=color.new(cMa, 55), linewidth=2)
+
+// icons pinned to the bottom edge, one colour per indicator; they stack when several fire together
+plotshape(passBoll, "BOLL passed", shape.circle, location.bottom, cBoll, size=size.small)
+plotshape(passMa, "MA passed", shape.circle, location.bottom, cMa, size=size.small)
+plotshape(passMacd, "MACD passed", shape.circle, location.bottom, cMacd, size=size.small)
+plotshape(showBlocked and blockBoll, "BOLL blocked", shape.xcross, location.bottom, cBoll, size=size.small)
+plotshape(showBlocked and blockMa, "MA blocked", shape.xcross, location.bottom, cMa, size=size.small)
+plotshape(showBlocked and blockMacd, "MACD blocked", shape.xcross, location.bottom, cMacd, size=size.small)
+
+// the ATR % of each signal, written on its candle (a changing number can only be a label, and labels cannot be pinned)
+mSize = markerSize == "huge" ? size.huge : markerSize == "large" ? size.large : markerSize == "normal" ? size.normal : markerSize == "small" ? size.small : size.tiny
+rowAtr = ta.atr(14) // spacing between the rows
+f_txt(pct) => str.tostring(pct, "#.##")
+if showNumbers and rawBoll and conf and (passBoll or showBlocked)
+    label.new(bar_index, low - rowAtr * 1.0, f_txt(pctBoll), yloc=yloc.price, style=label.style_none, textcolor=cBoll, size=mSize)
+if showNumbers and rawMa and conf and (passMa or showBlocked)
+    label.new(bar_index, low - rowAtr * 1.8, f_txt(pctMa), yloc=yloc.price, style=label.style_none, textcolor=cMa, size=mSize)
+if showNumbers and rawMacd and conf and (passMacd or showBlocked)
+    label.new(bar_index, low - rowAtr * 2.6, f_txt(pctMacd), yloc=yloc.price, style=label.style_none, textcolor=cMacd, size=mSize)
+
+// the ATR % of every candle is also in the status line and the Data Window: hover any candle to read it
+plot(useBoll ? pctBoll : na, "BOLL ATR %", color=cBoll, display=display.status_line + display.data_window)
+plot(useMa ? pctMa : na, "MA ATR %", color=cMa, display=display.status_line + display.data_window)
+plot(useMacd ? pctMacd : na, "MACD ATR %", color=cMacd, display=display.status_line + display.data_window)
+
+// one alert per candle naming the indicators that passed
+f_add(s, n) => s == "" ? n : s + " + " + n
+string names = ""
+if passBoll
+    names := f_add(names, "BOLL revert")
+if passMa
+    names := f_add(names, "MA cross")
+if passMacd
+    names := f_add(names, "MACD cross")
+if alertOn and names != ""
+    alert(syminfo.ticker + " " + timeframe.period + ": " + names + " at " + str.tostring(close, format.mintick), alert.freq_once_per_bar_close)
