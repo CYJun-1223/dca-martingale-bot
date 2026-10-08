@@ -313,7 +313,7 @@ export default function FormBody({ id, kind }) {
       <button type="button" className={part === 'rest' ? 'on' : ''} onClick={() => setPart('rest')}>Settings</button></div>}
     <form id="form" ref={formRef} className={`d-body ${isAlert ? 'alert-mode' : ''}`} autoComplete="off" onSubmit={e => { e.preventDefault(); submit(); }}>
       <fieldset className={`card ${showPart('rest')}`}>
-        <div className="card-head"><span className="num n1">1</span>{isAlert ? 'Stock' : 'Market'}</div>
+        <div className="card-head"><span className="step-no n1">1</span>{isAlert ? 'Stock' : 'Market'}</div>
         {v && <p className="hint" style={{ margin: '0 0 8px' }}>Broker, symbol and leverage can't change after creation.</p>}
         <div className="fgrid">
           <div className="field full"><label className="l">Name</label>
@@ -369,7 +369,7 @@ export default function FormBody({ id, kind }) {
       </fieldset>
       {!isAlert && <>
       <fieldset className={`card ${showPart('rest')}`}>
-        <div className="card-head"><span className="num n2">2</span>Capital</div>
+        <div className="card-head"><span className="step-no n2">2</span>Capital</div>
         <div className="fgrid">
           {numField({ k: 'investment', label: 'Total investment', unit: 'USDT', extra: { step: 'any', min: 1 },
             hint: minInv !== null ? <div className={`hint ${low ? 'down' : ''}`}>Min {fx(minInv)} USDT</div> : null })}
@@ -379,7 +379,7 @@ export default function FormBody({ id, kind }) {
         </div>
       </fieldset>
       <fieldset className={`card ${showPart('rest')}`}>
-        <div className="card-head"><span className="num n3">3</span>Averaging</div>
+        <div className="card-head"><span className="step-no n3">3</span>Averaging</div>
         <div className="fgrid">
           {numField({ k: 'stepPct', label: 'Price step', unit: '%', extra: { step: 'any', min: 0.01 } })}
           {numField({ k: 'stepMult', label: 'Price step multiplier', unit: '×', extra: { step: 'any', min: 1 } })}
@@ -388,7 +388,7 @@ export default function FormBody({ id, kind }) {
         </div>
       </fieldset>
       <fieldset className={`card ${showPart('rest')}`} id="martFs">
-        <div className="card-head"><span className="num n4">4</span>Take profit &amp; execution</div>
+        <div className="card-head"><span className="step-no n4">4</span>Take profit &amp; execution</div>
         <div className="fgrid">
           {numField({ k: 'tpPct', label: 'Take profit', unit: '%', extra: { step: 'any', min: 0.01 } })}
           <div className="field"><label className="l" htmlFor="f-cyc">Max cycles</label><input id="f-cyc" type="number" step="1" min="0" max="1000" value={f.maxCycles} placeholder="0 = no limit" onChange={e => set({ maxCycles: e.target.value })} /></div>

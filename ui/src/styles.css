@@ -441,11 +441,11 @@
   /* ---- form: numbered section cards (Settings) ---- */
   fieldset.card { border:1px solid var(--line); border-radius:14px; padding:12px 14px 14px; margin:14px 0 0; background:color-mix(in srgb, var(--ink) 2%, var(--surface)); }
   .card-head { display:flex; align-items:center; gap:10px; font-weight:650; font-size:15px; margin:0 0 10px; padding:0; }
-  .num { width:28px; height:28px; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:14px; flex:none; }
-  .num.n1 { background:var(--accent-soft); color:var(--accent); }
-  .num.n2 { background:color-mix(in srgb, var(--good) 15%, transparent); color:var(--good-ink); }
-  .num.n3 { background:color-mix(in srgb, #7b5bd6 16%, transparent); color:#7b5bd6; }
-  .num.n4 { background:color-mix(in srgb, var(--warn) 22%, transparent); color:var(--warn-ink); }
+  .step-no { width:28px; height:28px; border-radius:50%; display:grid; place-items:center; font-weight:700; font-size:14px; flex:none; }
+  .step-no.n1 { background:var(--accent-soft); color:var(--accent); }
+  .step-no.n2 { background:color-mix(in srgb, var(--good) 15%, transparent); color:var(--good-ink); }
+  .step-no.n3 { background:color-mix(in srgb, #7b5bd6 16%, transparent); color:#7b5bd6; }
+  .step-no.n4 { background:color-mix(in srgb, var(--warn) 22%, transparent); color:var(--warn-ink); }
   .choice { display:grid; grid-template-columns:1fr 1.4fr; gap:8px; }
   .choice label { display:flex; align-items:center; gap:10px; border:1px solid var(--line2); border-radius:10px; padding:9px 12px; cursor:pointer; background:var(--raised); }
   .choice label:has(input:checked) { border-color:var(--accent); background:var(--accent-soft); color:var(--accent); font-weight:600; }
