@@ -349,8 +349,8 @@ export default function FormBody({ id, kind }) {
           {numField({ k: 'amountMult', label: 'Amount multiple', unit: '×', extra: { step: 'any', min: 1 } })}
           {numField({ k: 'tpPct', label: 'Take profit', unit: '%', extra: { step: 'any', min: 0.01 }, hint: <div className="hint">Above the average price.</div> })}
           <div className="field"><label className="l" htmlFor="f-fill">Orders</label><select id="f-fill" value={f.fillMode} disabled={!!editing} onChange={e => set({ fillMode: e.target.value })}>
-            <option value="auto" hidden>Automatic (simulated)</option><option value="manual">By hand on the exchange</option><option value="live">Automatic (live, real money)</option></select>
-            <div className="hint">By hand: you place each order and enter its real fill. Live: the bot sends market orders to Bitget and follows the real fills.</div></div>
+            <option value="auto" hidden>Automatic (simulated)</option><option value="manual">Manual</option><option value="live">Automatic</option></select>
+            <div className="hint">Manual: you place each order and enter its real fill. Automatic: the bot places the orders on Bitget (real money).</div></div>
           <div className="field"><label className="l" htmlFor="f-cyc">Max cycles</label><input id="f-cyc" type="number" step="1" min="0" max="1000" value={f.maxCycles} onChange={e => set({ maxCycles: e.target.value })} />
             <div className="hint">0 = no limit. After this many cycles the bot opens no new one.</div></div>
         </div>
