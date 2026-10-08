@@ -1,5 +1,5 @@
 // The drawer that creates / edits a bot or an alert-only watch.
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useData, useUi, usePanels, post, del, getJSON, Sheet, go } from './core.jsx';
 import { fx } from './lib/format.js';
 import { TFS, TF_MIN, IND_DEFAULT, indOf, entryOf, sigShort, sigSentence, volText } from './lib/entry.js';
@@ -63,6 +63,27 @@ function Cond({ s, set, def, onRemove }) {
 // the chip between two conditions / groups is the AND / OR; tap it to switch
 const Chip = ({ logic, onClick, small }) => <div className={`joiner ${small ? 'small' : ''}`}><button type="button" className={`logic ${logic}`} onClick={onClick} title="Tap to switch AND / OR">{logic === 'and' ? 'AND' : 'OR'}</button></div>;
 
+// ---------- what is about to be created: every parameter, read before the bot exists ----------
+function ReviewBody({ b, entry, mg, rows, brokerLabel, busy, err, onBack, onCreate }) {
+  const live = b.dryRun === false, last = rows[rows.length - 1];
+  const G = ({ t, items }) => <><h4>{t}</h4><dl>{items.filter(Boolean).map(([k, x]) => <Fragment key={k}><dt>{k}</dt><dd>{x}</dd></Fragment>)}</dl></>;
+  return <div className="review">
+    <div className="mo-bot" style={{ paddingBottom: 6 }}><b>{b.name}</b></div>
+    <G t="Market" items={[['Broker', brokerLabel], ['Symbol', b.symbol]]} />
+    <G t="Entry" items={[['First order', entry]]} />
+    <G t="Capital" items={[['Total investment', `${fx(+b.investment, 2)} USDT`], ['Leverage', `${b.leverage}x ${b.marginMode === 'isolated' ? 'isolated' : 'cross'}`],
+      ['First order margin', `${fx(firstMargin(mg))} USDT`]]} />
+    <G t="Averaging" items={[['Price step', `${b.stepPct}% × ${b.stepMult}`], ['Order size multiplier', `× ${b.amountMult}`], ['Max add orders', b.maxAdds],
+      last && ['Adds cover a drop to', `−${fx(last.drop, 1)}%`]]} />
+    <G t="Take profit & execution" items={[['Take profit', `${b.tpPct}% above average`], ['Max cycles', +b.maxCycles ? b.maxCycles : 'no limit'],
+      ['Order execution', live ? 'Automatic — Live' : 'Manual'], ['Stop loss', 'None']]} />
+    {live && <p className="live">LIVE: real orders on {brokerLabel} with up to {fx(+b.investment, 2)} USDT margin at {b.leverage}x, starting as soon as it is created. ⏸ Pause on the list page stops all orders at once.</p>}
+    <p className="err">{err}</p>
+    <div className="review-foot"><button className="btn" onClick={onBack}>Back</button>
+      <button className={`btn ${live ? 'danger' : 'primary'}`} disabled={busy} onClick={onCreate}>{live ? 'Create live bot' : 'Create'}</button></div>
+  </div>;
+}
+
 // ---------- the form ----------
 export default function FormBody({ id, kind }) {
   const { S, load, setStrategies } = useData(), { toast, ask } = useUi(), { close } = usePanels();
@@ -91,7 +112,7 @@ export default function FormBody({ id, kind }) {
   const [part, setPart] = useState(isAlert ? null : 'entry');
   const [identEdit, setIdentEdit] = useState(false);
   const [err, setErr] = useState(''), [busy, setBusy] = useState(false);
-  const [pv, setPv] = useState(false);
+  const [pv, setPv] = useState(false), [review, setReview] = useState(null); // review = the new bot's body, shown before it is created
   const [px, setPx] = useState({ price: v ? v.price : null, contract: null });
   const [trackPref, setTrackPref] = useState(true), [limitNow, setLimitNow] = useState('');
   const [ck, setCk] = useState({ cls: 'hint', text: 'Checks the symbol exists on the broker and allows your leverage.', busy: false });
@@ -243,9 +264,13 @@ export default function FormBody({ id, kind }) {
     if (!isAlert && !editing) {
       const live = body.fillMode === 'live';
       body.dryRun = !live; if (live) body.fillMode = 'auto';
-      if (live && !await ask('Create a LIVE bot?', <><b>{body.symbol}</b> will send real market orders to Bitget with up to <b>{body.investment} USDT</b> margin at <b>{body.leverage}x</b>, starting as soon as it is created. Use <b>⏸ Pause</b> on the list page to stop all orders at once.</>, 'Create live bot')) return;
+      setReview(body); // a new bot is created only from the review sheet
+      return;
     }
     if (live0 && !await ask('Save changes to a live bot?', <><b>{name || editing}</b> trades real money. A running bot applies the change on its next check.</>, 'Save')) return;
+    await send(body);
+  };
+  const send = async body => {
     setBusy(true); setErr('');
     const base = isAlert ? '/api/watches' : '/api/bots';
     try {
@@ -281,8 +306,8 @@ export default function FormBody({ id, kind }) {
     {!v && !isAlert && <div className="seg"><button type="button" className={part === 'entry' ? 'on' : ''} onClick={() => setPart('entry')}>Entry condition</button>
       <button type="button" className={part === 'rest' ? 'on' : ''} onClick={() => setPart('rest')}>Settings</button></div>}
     <form id="form" ref={formRef} className={`d-body ${isAlert ? 'alert-mode' : ''}`} autoComplete="off" onSubmit={e => { e.preventDefault(); submit(); }}>
-      <fieldset className={showPart('rest')}>
-        <legend>{isAlert ? 'Stock' : 'Basics'}</legend>
+      <fieldset className={`card ${showPart('rest')}`}>
+        <div className="card-head"><span className="num n1">1</span>{isAlert ? 'Stock' : 'Market'}</div>
         {v && <p className="hint" style={{ margin: '0 0 8px' }}>Broker, symbol and leverage can't change after creation.</p>}
         <div className="fgrid">
           <div className="field full"><label className="l">Name</label>
@@ -336,26 +361,41 @@ export default function FormBody({ id, kind }) {
           </div>
         </details>
       </fieldset>
-      {!isAlert && <fieldset className={showPart('rest')} id="martFs">
-        <legend>Martingale</legend>
+      {!isAlert && <>
+      <fieldset className={`card ${showPart('rest')}`}>
+        <div className="card-head"><span className="num n2">2</span>Capital</div>
         <div className="fgrid">
-          {numField({ k: 'investment', label: 'Investment', unit: 'USDT', extra: { step: 'any', min: 1 },
+          {numField({ k: 'investment', label: 'Total investment', unit: 'USDT', extra: { step: 'any', min: 1 },
             hint: <div className={`hint ${low ? 'down' : ''}`}>{minInv === null ? 'Split over all orders automatically.' : `Minimum ${fx(minInv)} USDT at ${fx(px.price)}. ${low ? 'Below it the bot is still created and asks you to add funds when an order cannot open.' : 'Split over all orders automatically.'}`}</div> })}
           {numField({ k: 'leverage', label: 'Leverage', unit: 'x', extra: { step: 1, min: 1 } })}
-          <div className="field"><label className="l" htmlFor="f-mm">Margin mode</label><select id="f-mm" value={f.marginMode} disabled={lockedKey('marginMode')} onChange={e => set({ marginMode: e.target.value })}><option value="crossed">Cross 全仓</option><option value="isolated">Isolated 逐仓</option></select></div>
+          <div className="field"><label className="l" htmlFor="f-mm">Margin mode</label><select id="f-mm" value={f.marginMode} disabled={lockedKey('marginMode')} onChange={e => set({ marginMode: e.target.value })}><option value="crossed">Cross</option><option value="isolated">Isolated</option></select></div>
+        </div>
+      </fieldset>
+      <fieldset className={`card ${showPart('rest')}`}>
+        <div className="card-head"><span className="num n3">3</span>Averaging</div>
+        <div className="fgrid">
           {numField({ k: 'stepPct', label: 'Price step', unit: '%', extra: { step: 'any', min: 0.01 }, hint: <div className="hint">Every add is measured from the entry price.</div> })}
-          {numField({ k: 'stepMult', label: 'Price step multiple', unit: '×', extra: { step: 'any', min: 1 } })}
+          {numField({ k: 'stepMult', label: 'Price step multiplier', unit: '×', extra: { step: 'any', min: 1 } })}
+          {numField({ k: 'amountMult', label: 'Order size multiplier', unit: '×', extra: { step: 'any', min: 1 } })}
           {numField({ k: 'maxAdds', label: 'Max add orders', extra: { step: 1, min: 0, max: 20 } })}
-          {numField({ k: 'amountMult', label: 'Amount multiple', unit: '×', extra: { step: 'any', min: 1 } })}
-          {numField({ k: 'tpPct', label: 'Take profit', unit: '%', extra: { step: 'any', min: 0.01 }, hint: <div className="hint">Above the average price.</div> })}
-          <div className="field"><label className="l" htmlFor="f-fill">Orders</label><select id="f-fill" value={f.fillMode} disabled={!!editing} onChange={e => set({ fillMode: e.target.value })}>
-            <option value="auto" hidden>Automatic (simulated)</option><option value="manual">Manual</option><option value="live">Automatic</option></select>
-            <div className="hint">Manual: you place each order and enter its real fill. Automatic: the bot places the orders on Bitget (real money).</div></div>
-          <div className="field"><label className="l" htmlFor="f-cyc">Max cycles</label><input id="f-cyc" type="number" step="1" min="0" max="1000" value={f.maxCycles} onChange={e => set({ maxCycles: e.target.value })} />
-            <div className="hint">0 = no limit. After this many cycles the bot opens no new one.</div></div>
         </div>
         <p className="faint" style={{ margin: '12px 0 0' }}>{ok ? `${rows.length} orders · adds cover a drop to −${fx(last.drop, 1)}%` : 'Fill in the martingale fields to preview the order plan.'}</p>
-      </fieldset>}
+      </fieldset>
+      <fieldset className={`card ${showPart('rest')}`} id="martFs">
+        <div className="card-head"><span className="num n4">4</span>Take profit &amp; execution</div>
+        <div className="fgrid">
+          {numField({ k: 'tpPct', label: 'Take profit', unit: '%', extra: { step: 'any', min: 0.01 }, hint: <div className="hint">Above the average price.</div> })}
+          <div className="field"><label className="l" htmlFor="f-cyc">Max cycles</label><input id="f-cyc" type="number" step="1" min="0" max="1000" value={f.maxCycles} onChange={e => set({ maxCycles: e.target.value })} />
+            <div className="hint">0 = no limit.</div></div>
+          <div className="field full"><label className="l">Order execution</label>
+            <div className="choice" role="radiogroup" aria-label="Order execution">
+              <label><input type="radio" name="fillMode" checked={f.fillMode === 'manual'} disabled={!!editing} onChange={() => set({ fillMode: 'manual' })} />Manual</label>
+              <label><input type="radio" name="fillMode" checked={f.fillMode === 'live'} disabled={!!editing} onChange={() => set({ fillMode: 'live' })} />Automatic — Live</label>
+            </div>
+            <div className="hint">Manual: you place each order and enter its real fill. Automatic: the bot places the orders on Bitget with real money.</div></div>
+        </div>
+      </fieldset>
+      </>}
       <p className="err">{err}</p>
     </form>
     <div className="d-foot">
@@ -365,6 +405,10 @@ export default function FormBody({ id, kind }) {
       <span className="faint" style={{ fontSize: 12 }} id="footNote">{v && v.running ? 'Applies on the next check' : ''}</span>
       <button className="btn primary" disabled={busy} onClick={submit}>{v ? 'Save changes' : 'Create'}</button>
     </div>
+    <Sheet open={!!review} onClose={() => setReview(null)} title="Review">
+      {review && <ReviewBody b={review} entry={isAlert ? '' : f.entryMode === 'indicator' ? `${trigger.replace(/^Opens a cycle when /, '').replace(/.$/, '')}` : f.entryMode === 'maker' ? `Limit buy at ${fx(+review.limitPx)}` : 'Market buy right away'}
+        mg={mg} rows={rows} brokerLabel={brokerLabel(review.broker)} busy={busy} err={err} onBack={() => setReview(null)} onCreate={() => send(review)} />}
+    </Sheet>
     <Sheet open={pv && ok} onClose={() => setPv(false)} title="Order preview">
       <b>{lim ? `If the first order fills at the limit price ${fx(startPx)}` : px.price ? `If a cycle opened now at ${fx(startPx)}` : 'Order plan (example price 100)'}</b>
       <div style={{ marginTop: 6 }}><OrdersTable rows={rows} inv={mg.investment} c={px.contract} /></div>
