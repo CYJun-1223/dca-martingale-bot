@@ -359,11 +359,11 @@ export default function FormBody({ id, kind }) {
       <p className="err">{err}</p>
     </form>
     <div className="d-foot">
-      <button className="btn primary" disabled={busy} onClick={submit}>{v ? 'Save changes' : isAlert ? 'Create alert' : 'Create bot'}</button>
-      {!isAlert && <button type="button" className="btn" disabled={!ok} onClick={() => setPv(true)}>Preview orders</button>}
+      {!isAlert && <button type="button" className="btn" disabled={!ok} onClick={() => setPv(true)}>Preview</button>}
       {isAlert && v && S.editable && <><button type="button" className="btn small" onClick={testAlert}>Test</button><button type="button" className="btn small danger" onClick={delAlert}>Delete</button></>}
       <span className="sp" />
       <span className="faint" style={{ fontSize: 12 }} id="footNote">{v && v.running ? 'Applies on the next check' : ''}</span>
+      <button className="btn primary" disabled={busy} onClick={submit}>{v ? 'Save changes' : 'Create'}</button>
     </div>
     <Sheet open={pv && ok} onClose={() => setPv(false)} title="Order preview">
       <b>{lim ? `If the first order fills at the limit price ${fx(startPx)}` : px.price ? `If a cycle opened now at ${fx(startPx)}` : 'Order plan (example price 100)'}</b>
