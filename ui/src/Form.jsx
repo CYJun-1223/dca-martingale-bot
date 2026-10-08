@@ -354,14 +354,13 @@ export default function FormBody({ id, kind }) {
           <div className="field"><label className="l" htmlFor="f-cyc">Max cycles</label><input id="f-cyc" type="number" step="1" min="0" max="1000" value={f.maxCycles} onChange={e => set({ maxCycles: e.target.value })} />
             <div className="hint">0 = no limit. After this many cycles the bot opens no new one.</div></div>
         </div>
-        <div className="preview"><button type="button" className="btn" disabled={!ok} onClick={() => setPv(true)}>Preview orders</button>
-          <p className="faint" style={{ margin: '8px 0 0' }}>{ok ? `${rows.length} orders · adds cover a drop to −${fx(last.drop, 1)}%` : 'Fill in the martingale fields to preview the order plan.'}</p></div>
+        <p className="faint" style={{ margin: '12px 0 0' }}>{ok ? `${rows.length} orders · adds cover a drop to −${fx(last.drop, 1)}%` : 'Fill in the martingale fields to preview the order plan.'}</p>
       </fieldset>}
       <p className="err">{err}</p>
     </form>
     <div className="d-foot">
       <button className="btn primary" disabled={busy} onClick={submit}>{v ? 'Save changes' : isAlert ? 'Create alert' : 'Create bot'}</button>
-      <button className="btn" onClick={close}>Cancel</button>
+      {!isAlert && <button type="button" className="btn" disabled={!ok} onClick={() => setPv(true)}>Preview orders</button>}
       {isAlert && v && S.editable && <><button type="button" className="btn small" onClick={testAlert}>Test</button><button type="button" className="btn small danger" onClick={delAlert}>Delete</button></>}
       <span className="sp" />
       <span className="faint" style={{ fontSize: 12 }} id="footNote">{v && v.running ? 'Applies on the next check' : ''}</span>
