@@ -4,12 +4,14 @@
 // must not stop the bot.
 const fs = require('fs');
 const path = require('path');
+const db = require('./db');
 
 const ICON = { reset: '🔁', signal: '📶', open: '🟢', add: '➕', reduce: '➖', tp: '💰', mismatch: '⚠️', error: '❌', start: '▶️', stop: '⏹', test: '🔔' };
 
 class Alerts {
-  constructor(cfg, { dir = '.', botId = 'bot', now = () => Date.now(), send = null } = {}) {
+  constructor(cfg, { dir = '.', botId = 'bot', now = () => Date.now(), send = null, topic = null } = {}) {
     this.cfg = cfg; this.botId = botId; this.now = now;
+    this.topic = topic || { key: `bot:${botId}`, title: botId }; // a bot's own topic unless the caller names one (alert watches: their symbol)
     this.file = path.join(dir, cfg.alertsFile || `alerts-${botId}.log`);
     this.token = process.env.TELEGRAM_BOT_TOKEN;
     this.chat = process.env.TELEGRAM_CHAT_ID;
@@ -37,14 +39,34 @@ class Alerts {
   attach(bus) { return bus.subscribe(ev => { const m = format(ev); if (m) return this.send(m[0], m[1]); }); }
 
   async telegram(text) {
+    const body = { chat_id: this.chat, text, disable_web_page_preview: true };
+    // no topic (creation failed): the message still reaches the group's main chat, and the log says why
+    try { body.message_thread_id = await this.threadId(); }
+    catch (e) { try { fs.appendFileSync(this.file, `${new Date(this.now()).toLocaleString('sv-SE').slice(0, 16)} ALERTERR topic: ${e.message}\n`); } catch { /* ignore */ } }
     const r = await fetch(`https://api.telegram.org/bot${this.token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: this.chat, text, disable_web_page_preview: true }),
+      body: JSON.stringify(body),
       signal: AbortSignal.timeout(10e3),
     });
     const j = await r.json();
     if (!j.ok) throw new Error(j.description || `HTTP ${r.status}`);
+  }
+
+  // one forum topic per key ("symbol:SOXXUSDT", "bot:<id>"): created on first use, then remembered in the database
+  async threadId() {
+    const known = await db.topicOf(this.topic.key);
+    if (known) return Number(known);
+    const r = await fetch(`https://api.telegram.org/bot${this.token}/createForumTopic`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: this.chat, name: this.topic.title.slice(0, 128) }),
+      signal: AbortSignal.timeout(10e3),
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.description || `HTTP ${r.status}`);
+    await db.saveTopic(this.topic.key, j.result.message_thread_id);
+    return j.result.message_thread_id;
   }
 }
 

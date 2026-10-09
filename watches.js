@@ -57,4 +57,7 @@ function explicitEntry(cfg) {
   return { ...e, groups: e.groups.map(g => ({ ...g, signals: g.signals.map(s => ({ ...s, tf: s.tf || cfg.tf })) })) };
 }
 
-module.exports = { list, save, cfgFor, validate, watchTf, explicitEntry };
+// alerts on one symbol share one Telegram topic (titled e.g. SOXX)
+const topic = w => ({ key: `symbol:${w.symbol}`, title: w.symbol.replace(/USDT$/, '') });
+
+module.exports = { list, save, cfgFor, validate, watchTf, explicitEntry, topic };

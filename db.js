@@ -21,6 +21,7 @@ create table if not exists strategies (id text primary key, name text not null, 
 create table if not exists watches    (id text primary key, rec jsonb not null, pos serial);
 create table if not exists bot_state  (bot_id text primary key, state jsonb not null, updated_at timestamptz not null default now());
 create table if not exists watch_state(watch_id text primary key, state jsonb not null, updated_at timestamptz not null default now());
+create table if not exists tg_topics  (key text primary key, thread_id bigint not null);
 create table if not exists trades (
   id bigserial primary key, bot_id text not null, ts timestamptz not null, symbol text not null, cycle int,
   action text not null, ord int, qty numeric, price numeric, margin numeric, avg_price numeric, pnl numeric,
@@ -65,6 +66,10 @@ const botStateRow = id => stateRow('bot_state', 'bot_id', id);
 const watchStateRow = id => stateRow('watch_state', 'watch_id', id);
 const statesOf = async ids => Object.fromEntries((await q('select bot_id, state from bot_state where bot_id = any($1)', [ids])).rows.map(r => [r.bot_id, r.state]));
 
+// ---------- Telegram topics: key ("symbol:SOXXUSDT", "bot:<id>") -> forum thread id in the alerts group ----------
+const topicOf = async key => (await q('select thread_id from tg_topics where key = $1', [key])).rows[0]?.thread_id ?? null;
+const saveTopic = (key, threadId) => q('insert into tg_topics (key, thread_id) values ($1, $2) on conflict (key) do update set thread_id = $2', [key, threadId]);
+
 // ---------- trade ledger: one row per open / add / take profit / close / reduce ----------
 const TRADE_COLS = ['bot_id', 'ts', 'symbol', 'cycle', 'action', 'ord', 'qty', 'price', 'margin', 'avg_price', 'pnl', 'opened_at', 'held', 'mode'];
 const addTrade = t => q(`insert into trades (${TRADE_COLS.join(', ')}) values (${TRADE_COLS.map((_, i) => `$${i + 1}`).join(', ')})`, TRADE_COLS.map(k => t[k] ?? null));
@@ -79,4 +84,4 @@ const hasCommands = async botId => (await q('select 1 from commands where bot_id
 const end = () => pool ? pool.end().then(() => { pool = null; }) : Promise.resolve();
 
 module.exports = { q, migrate, listBots, saveBots, listWatches, saveWatches, listStrategies, saveStrategies, loadState, saveState, statesOf,
-  loadWatchState, saveWatchState, botStateRow, watchStateRow, addTrade, tradesOf, addCommand, takeCommands, pendingCommands, hasCommands, end };
+  loadWatchState, saveWatchState, botStateRow, watchStateRow, topicOf, saveTopic, addTrade, tradesOf, addCommand, takeCommands, pendingCommands, hasCommands, end };

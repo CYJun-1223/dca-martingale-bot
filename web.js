@@ -408,7 +408,7 @@ const server = http.createServer(async (req, res) => {
         return send(res, 200, { enabled: list[i].enabled });
       }
       if (action === 'test' && req.method === 'POST') { // a real Telegram message, so the user knows it reaches them
-        const w = list[i], a = new Alerts(watches.cfgFor(w), { dir: DIR, botId: w.name });
+        const w = list[i], a = new Alerts(watches.cfgFor(w), { dir: DIR, botId: w.name, topic: watches.topic(w) });
         if (!a.sendFn) throw new Error('Telegram is not set up: add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID to .env and restart.');
         await a.telegram(`🔔 Test: ${w.name} (${w.symbol} ${w.tf}) is watching. Alerts will arrive here.`);
         return send(res, 200, { sent: true });

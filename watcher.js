@@ -45,7 +45,7 @@ async function checkOnce({ cfg, market, alerts, st, pdp }) {
 async function runWatch(record, wanted, { api, dir }) {
   let w = record, cfg = watches.cfgFor(w);
   const market = createMarket(cfg, api);
-  const alerts = new Alerts(cfg, { dir, botId: w.name });
+  const alerts = new Alerts(cfg, { dir, botId: w.name, topic: watches.topic(w) });
   const st = { lastBarTs: 0, signals: [], ...(await db.loadWatchState(w.id)) };
   const pdp = +(await market.contract()).pricePlace || 2;
   const save = () => db.saveWatchState(w.id, st);
