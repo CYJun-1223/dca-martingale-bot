@@ -108,4 +108,7 @@ async function watchdog() {
 if (!args['no-watchdog']) { watchdog(); setInterval(watchdog, 60e3); }
 
 db.migrate().catch(e => console.error(`database: ${e.message}`)); // creates the tables on first use
+// Started by a loop (Task Scheduler `cmd /c for /l`): when that parent goes away (task ended) exit too, so End + Run in Task Scheduler is a real restart.
+const PARENT = process.ppid;
+if (PARENT > 1) setInterval(() => { try { process.kill(PARENT, 0); } catch (e) { if (e.code === 'ESRCH') process.exit(0); } }, 2000).unref();
 server.listen(PORT, HOST, () => console.log(`dashboard: http://${HOST}:${PORT} (${EDIT ? 'edit' : 'view-only'})`));
