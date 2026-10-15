@@ -18,19 +18,13 @@ function Field({ label, value, onChange, placeholder, secure, hint, keyboard }) 
 
 export default function ConnectScreen({ navigation }) {
   const t = useTheme(), { conn, connect, disconnect, S } = useData();
-  const [f, setF] = useState({ url: conn?.url || '', user: conn?.user || '', pass: conn?.pass || '', cfId: conn?.cfId || '', cfSecret: conn?.cfSecret || '' });
+  const [f, setF] = useState({ url: conn?.url || '', user: conn?.user || '', pass: conn?.pass || '' });
   const [busy, setBusy] = useState(false), [msg, setMsg] = useState(null);
   const set = k => v => setF(x => ({ ...x, [k]: v }));
   const connected = !!(conn && conn.url) && !S.error && S.lastOk > 0;
 
-  const browserSignIn = async () => {
-    const c = { ...f, url: cleanUrl(f.url), user: '', pass: '', cfId: '', cfSecret: '', mode: 'browser' };
-    await connect(c);
-    navigation.navigate('Login');
-  };
-
   const save = async () => {
-    const c = { ...f, url: cleanUrl(f.url), mode: '' };
+    const c = { ...f, url: cleanUrl(f.url) };
     setBusy(true); setMsg(null);
     try {
       const d = await request(c, '/api/bots', { timeout: 12000 });
@@ -43,26 +37,15 @@ export default function ConnectScreen({ navigation }) {
   return <KeyboardAvoidingView style={{ flex: 1, backgroundColor: t.page }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
     <ScrollView contentContainerStyle={{ padding: 16, gap: 14 }} keyboardShouldPersistTaps="handled">
       <Text style={{ color: t.ink, fontSize: 22, fontWeight: '700' }}>Connect to your bots</Text>
-      <Faint>Enter the address of your dashboard (the page you open in the browser). The app shows the same bots and lets you start, stop and pause them.</Faint>
+      <Faint>The app talks to your dashboard over Tailscale (keep the Tailscale app on, on the phone). It shows the same bots and lets you start, stop and pause them.</Faint>
       <Card style={{ gap: 12 }}>
-        <Field label="Server address" value={f.url} onChange={set('url')} placeholder="https://bots.example.com" keyboard="url" />
-        <Button primary disabled={busy || !f.url.trim()} onPress={browserSignIn}>Sign in with browser (Cloudflare email code)</Button>
-        <Faint>Same as opening the dashboard in a browser: Cloudflare page, your email, the code. Use this for your public https address.</Faint>
-      </Card>
-      <Text style={{ color: t.ink2, textAlign: 'center' }}>or, with a password / token</Text>
-      <Card style={{ gap: 12 }}>
-        <Field label="User" value={f.user} onChange={set('user')} placeholder="admin" hint="The dashboard login (WEB_USER). Leave empty if the server has none." />
+        <Field label="Server address" value={f.url} onChange={set('url')} placeholder="http://100.x.x.x:8787" keyboard="url" hint="Your PC's Tailscale address and the dashboard port." />
+        <Field label="User" value={f.user} onChange={set('user')} placeholder="admin" hint="WEB_USER from the bot's .env file." />
         <Field label="Password" value={f.pass} onChange={set('pass')} secure hint="WEB_PASSWORD from the bot's .env file." />
-      </Card>
-      <Card style={{ gap: 12 }}>
-        <Text style={{ color: t.ink, fontWeight: '600' }}>Behind Cloudflare Access? (optional)</Text>
-        <Faint>Cloudflare Access asks for a browser sign-in, which an app cannot do. Create a service token in Cloudflare Zero Trust, add a "Service Auth" policy for this app to your Access application, and paste its two values here.</Faint>
-        <Field label="Client ID" value={f.cfId} onChange={set('cfId')} placeholder="xxxx.access" />
-        <Field label="Client secret" value={f.cfSecret} onChange={set('cfSecret')} secure />
       </Card>
       {msg ? <Text style={{ color: msg.ok ? t.up : t.down, fontSize: 14 }}>{msg.text}</Text> : null}
       <View style={{ flexDirection: 'row', gap: 10 }}>
-        {connected ? <Button danger onPress={async () => { await disconnect(); setF({ url: '', user: '', pass: '', cfId: '', cfSecret: '' }); setMsg(null); }}>Forget</Button> : null}
+        {connected ? <Button danger onPress={async () => { await disconnect(); setF({ url: '', user: '', pass: '' }); setMsg(null); }}>Forget</Button> : null}
         <Button primary disabled={busy || !f.url.trim()} onPress={save}>{busy ? 'Checking…' : 'Connect'}</Button>
       </View>
     </ScrollView>

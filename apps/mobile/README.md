@@ -15,16 +15,12 @@ Alerts still arrive through Telegram; the app has no push notifications.
 
 ## Signing in
 
-The app sends whatever you enter on the Connect screen:
+One way: the dashboard's own login over Tailscale.
 
-| Server setup | Enter |
-|---|---|
-| Dashboard on your LAN / VPN (`node apps/server/web.js --host=0.0.0.0`) | `http://<pc-ip>:8787`, user `WEB_USER` (default `admin`), password `WEB_PASSWORD` |
-| Public through a Cloudflare Tunnel **without** Access | the https address, user and password |
-| Public through a Cloudflare Tunnel **with** Access, same sign-in as the browser | the https address, then **Sign in with browser**: Cloudflare page, your email, the code. The session cookie is kept on the phone; when it expires the app shows **Sign in again** |
-| Public through a Cloudflare Tunnel **with** Access, no browser step | the https address, user and password, plus a Cloudflare Access **service token** (Client ID and secret). In Zero Trust add a "Service Auth" policy for that token to the Access application |
+1. PC `.env`: `WEB_HOST=0.0.0.0` (dashboard also listens on Tailscale / LAN), `WEB_USER`, `WEB_PASSWORD`. Allow port 8787 from Tailscale (`100.64.0.0/10`) in the Windows firewall, restart the dashboard task.
+2. Phone: Tailscale on. In the app: server `http://<pc-tailscale-ip>:8787`, user, password, **Connect**.
 
-The service token row is for signing in without any browser step (it never expires like a cookie does).
+The Cloudflare address (browser, email code) stays for the browser; the app does not use it.
 
 ## Run it
 
