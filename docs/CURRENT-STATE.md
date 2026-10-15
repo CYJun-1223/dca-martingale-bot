@@ -1,14 +1,14 @@
 # Current state (tag `pre-framework` = c6e4b82)
 
 Updated 2026-10-15 (dashboard server split into routes / views / auth / env, see sections 1, 5, 7, 8); first written 2026-10-08 after the React dashboard and the move to PostgreSQL. Node >= 22.12; runtime dependency: `pg` only (React / Vite are build-time).
-Verified on 2026-10-08: `node test/units.js` -> "all 46 passed"; `node test/sim.js` -> "all invariants held".
+Re-verified on 2026-10-15 (after the apps/ restructure and the web split): `test/units.js` 46 passed, `test/sim.js` invariants held, `test/parity.js` 243 settings agree, `test/env.js`, `test/router.js`, `test/web.js` (106 answers) and `test/db.js` pass.
 
 ## 1. File map
 
 | File | Lines | Single responsibility |
 |---|---|---|
 | `apps/server/runner.js` | 141 | Supervisor: one loop per enabled bot + watch, all in one process (`sync()` runner.js:107, every 5 s runner.js:129) |
-| `apps/server/bot.js` | 254 | Legacy single-bot CLI: `check / trace / status / setup / run / alert` (bot.js:2-10). `npm start` still points here |
+| `apps/server/bot.js` | 254 | Legacy single-bot CLI: `check / trace / status / setup / run / alert` (bot.js:2-10). `npm start` now runs `runner.js`, not this |
 | `apps/server/engine.js` | 708 | Per-bot state machine: load/save state, tick, fills, resting-order sync, dashboard commands |
 | `apps/server/strategy.js` | 292 | Pure decision + DCA math, no I/O (entry signals, ladder, plan, levels, `decide`) |
 | `apps/server/executor.js` | 187 | Order adapters: `SimExecutor`, `BitgetExecutor`, `BinanceExecutor`; `createExecutor` (executor.js:178); `STOP_FILE` (executor.js:8); `liveEnabled` (executor.js:175) |
@@ -149,6 +149,7 @@ Replaced the single-file `web.html` on 2026-10-08 (the old page is in git at tag
 - `node test/parity.js`: dashboard preview (dca.mjs) == bot ladder (strategy.js), 243 settings + the reference table.
 - `node test/web.js`: starts the dashboard server from a temp copy of `apps/server` with an in-memory fake database and a fake exchange, sends 106 fixed HTTP requests (edit and `--readonly` mode, login, every API route, error cases) and compares each answer with `test/web.golden.json`. Never touches the real database, `runtime/` or `STOP_ALL`. `--record` rewrites the golden file after a deliberate change.
 - `node test/env.js`, `node test/router.js`: the `.env` format and the route matcher.
+- `node test/lock.js`: the runner's single-instance lock (first holder gets it, second is refused, free again after exit).
 - Not tested automatically: dashboard rendering (checked by hand in a browser), runner supervisor.
 
 ## 8. Pain points and refactor risks
@@ -159,7 +160,7 @@ Pain points:
 - (fixed 2026-10-15) web.js was one regex-chain handler with the `.env` loader copied in three files; it is now route table + `withBot` helper + one `env.js`. Still repeated: validate-then-save in several routes.
 - (fixed 2026-10-08) Commands and settings now go through PostgreSQL transactions; no file IPC left.
 - (fixed 2026-10-15) The API now has a characterization test (`test/web.js`, 106 requests); the UI still has none. `botView` does network calls per bot on every 15 s poll.
-- `bot.js` legacy CLI and `npm start` still point at the old single-bot path.
+- `bot.js` is the legacy single-bot CLI; `npm start` runs `runner.js` (the supervisor). The runner holds a single-instance lock (local TCP port 47821, `RUNNER_LOCK_PORT` to change; `test/lock.js`): a second runner exits at once. Takes effect from the first restart after 2026-10-15.
 
 Refactor risks:
 - Touching runner/engine/strategy while a live cycle is open: runner loads code once, so a restart picks up any change; invariants 1-9 must hold and `pos.plan` must be honoured.
@@ -167,3 +168,9 @@ Refactor risks:
 - State/config shape drift: a new validator dropping or renaming fields in the bots table / bot_state documents; back up the database (pg_dump) before migrations; keep backups and the current readers.
 - Auth regressions on a publicly tunnelled dashboard (Basic + CF Access, fail closed, APP_FILES-only bypass).
 - Browser math changes that silently differ from the engine's real orders.
+
+## 9. How it runs on Jun's PC (since 2026-10-15)
+
+- Windows Task Scheduler runs two `cmd /c for /l` loops that restart node 10 s after it exits: `bots-runner` (`apps\server\runner.js`, console in `runtime/runner.out.log`) and `bots-web` (`apps\server\web.js`, log `runtime/web.log`). Working directory is the repo root.
+- Code is loaded once per process: after an edit, stop the node process and the loop restarts it. Resting orders stay on the exchange during a restart. Never start a runner by hand while the task runs (from the first restart on, a second runner is refused by the lock).
+- Remote access: Cloudflare tunnel `amd` (token service) routes `bots.elionye.ccwu.cc` to `http://localhost:8787`, behind Cloudflare Access.

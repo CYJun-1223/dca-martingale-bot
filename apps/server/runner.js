@@ -121,7 +121,18 @@ async function sync() {
   for (const [id, ctl] of loops) if (!want.has(id) && !ctl.stop) { ctl.stop = true; console.log(`${localTime(Date.now())} stopping ${id}`); }
 }
 
+// one runner at a time: two would manage the same live bots and could send duplicate orders. The lock is a local TCP port held for the life
+// of the process; the OS frees it when the process ends or crashes, so there is never a stale lock to clean up.
+function acquireLock(port = +(process.env.RUNNER_LOCK_PORT || 47821)) {
+  return new Promise((resolve, reject) => {
+    const srv = require('net').createServer();
+    srv.once('error', e => reject(e.code === 'EADDRINUSE' ? new Error(`another runner is already running (port ${port} is taken)`) : e));
+    srv.listen(port, '127.0.0.1', () => { srv.unref(); resolve(srv); });
+  });
+}
+
 async function main() {
+  await acquireLock(); // before anything else: a second runner exits here, before it touches a bot
   console.log(`${localTime(Date.now())} runner started`);
   await db.migrate(); // creates the tables on first use
   await sync();
@@ -139,4 +150,4 @@ async function main() {
 }
 
 if (require.main === module) main().catch(e => { console.error(`${localTime(Date.now())} runner could not start: ${e.message}`); process.exit(1); }); // no database = no trading
-module.exports = { runBot, isEnabled };
+module.exports = { runBot, isEnabled, acquireLock };

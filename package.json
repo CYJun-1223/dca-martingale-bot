@@ -13,7 +13,7 @@
     "status": "node apps/server/bot.js status",
     "start": "node apps/server/runner.js",
     "web": "node apps/server/web.js",
-    "test": "node test/units.js && node test/sim.js && node test/parity.js && node test/env.js && node test/router.js && node test/web.js && node test/db.js",
+    "test": "node test/units.js && node test/sim.js && node test/parity.js && node test/env.js && node test/router.js && node test/lock.js && node test/web.js && node test/db.js",
     "build": "vite build apps/web",
     "dev:ui": "vite apps/web"
   },
