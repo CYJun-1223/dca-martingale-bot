@@ -35,8 +35,29 @@ npx expo start --web      # try it in a browser
 npm run bundle:android    # check that the app compiles
 ```
 
-An installable APK (needs an Expo account): `npx eas build --platform android --profile preview`.
-Without Expo's cloud: `npx expo prebuild --platform android` then build `android/` with Gradle (needs Android Studio / the SDK).
+## Build an installable APK
+
+Expo Go is only a test viewer. For a real app on your phone (no dev server, no Expo Go):
+
+**Option 1: Expo's cloud build (no Android tools on your PC).** Needs a free Expo account.
+```
+cd apps\mobile
+npx eas-cli login
+npx eas-cli build --platform android --profile preview
+```
+The first run offers to create the project (`eas init`); accept it and commit the `projectId` it adds to `app.json`.
+After 10-20 minutes it prints a link to the `.apk`. Open it on the phone and allow "install unknown apps".
+
+**Option 2: build on your PC.** Needs Android Studio (SDK) and JDK 17.
+```
+cd apps\mobile
+npx expo prebuild --platform android
+cd android
+.\gradlew assembleRelease
+```
+The APK is in `android\app\build\outputs\apk\release\`. `android/` is generated, so it is not committed.
+
+`app.json` allows plain `http` (`usesCleartextTraffic`) so the app can reach a dashboard on your LAN; an `https` address is safer.
 
 ## Shared code
 
