@@ -289,7 +289,7 @@
   .pill.good { background:color-mix(in srgb, var(--good) 16%, transparent); color:var(--good-ink); }
   /* Fixed to the bottom of the screen (More / Stop): it never moves with the scroll, also at the end of the page. The page gets
      room below its content so nothing ends up hidden behind it. The side padding keeps the buttons in the 860px column. */
-  .actionbar { position:fixed; left:0; right:0; bottom:0; z-index:4; display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; box-sizing:border-box;
+  .actionbar { position:fixed; left:0; right:0; bottom:0; z-index:4; display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:10px; box-sizing:border-box;
     padding:12px max(12px, calc((100vw - 860px) / 2)) calc(12px + env(safe-area-inset-bottom)); background:linear-gradient(to top, var(--page) 70%, transparent); }
   #bots:has(> .actionbar:not(:empty)) { padding-bottom:calc(80px + env(safe-area-inset-bottom)); }
   .actionbar:empty { display:none; }
