@@ -2,7 +2,7 @@
 // Dashboard: bot parameters + live state; create / edit / delete bots (database), send commands to the running bots.
 // Running bots pick up edits on their next tick (id, symbol, leverage and paper/live are fixed).
 //   node apps/server/web.js                 http://127.0.0.1:8787
-//   node apps/server/web.js --host=0.0.0.0  also reachable over your LAN / VPN
+//   node apps/server/web.js --host=0.0.0.0  also reachable over your LAN / VPN (or WEB_HOST=0.0.0.0 in .env)
 //   node apps/server/web.js --readonly      view only (no create / edit / delete)
 // Needs WEB_PASSWORD in .env. Public access goes through a Cloudflare Tunnel.
 // Read-only toward Bitget (public prices, plus the .env key for the account and resting-order view). It never places orders:
@@ -27,7 +27,6 @@ const args = Object.fromEntries(process.argv.slice(2).map(a => {
   const [k, v] = a.replace(/^--/, '').split('=');
   return [k, v ?? true];
 }));
-const HOST = args.host || '127.0.0.1';
 const PORT = +(args.port || 8787);
 const EDIT = !args.readonly; // --readonly hides create / edit / delete
 const WEB = path.join(ROOT, 'apps', 'web');
@@ -35,6 +34,7 @@ const DIST = path.join(WEB, args.dist || 'dist'); // the built dashboard (--dist
 
 // ---- login: WEB_USER / WEB_PASSWORD from .env (HTTP basic auth; serve over https only), or Cloudflare Access ----
 loadEnv(ROOT);
+const HOST = args.host || process.env.WEB_HOST || '127.0.0.1'; // WEB_HOST=0.0.0.0 in .env = also reachable over LAN / Tailscale
 const PASS = process.env.WEB_PASSWORD;
 if (!PASS && !args['no-auth']) {
   console.error('Set WEB_PASSWORD in .env (or pass --no-auth for local-only use).');
