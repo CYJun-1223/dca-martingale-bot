@@ -21,9 +21,10 @@ The app sends whatever you enter on the Connect screen:
 |---|---|
 | Dashboard on your LAN / VPN (`node apps/server/web.js --host=0.0.0.0`) | `http://<pc-ip>:8787`, user `WEB_USER` (default `admin`), password `WEB_PASSWORD` |
 | Public through a Cloudflare Tunnel **without** Access | the https address, user and password |
-| Public through a Cloudflare Tunnel **with** Access | the https address, user and password, plus a Cloudflare Access **service token** (Client ID and secret). In Zero Trust add a "Service Auth" policy for that token to the Access application |
+| Public through a Cloudflare Tunnel **with** Access, same sign-in as the browser | the https address, then **Sign in with browser**: Cloudflare page, your email, the code. The session cookie is kept on the phone; when it expires the app shows **Sign in again** |
+| Public through a Cloudflare Tunnel **with** Access, no browser step | the https address, user and password, plus a Cloudflare Access **service token** (Client ID and secret). In Zero Trust add a "Service Auth" policy for that token to the Access application |
 
-Browser sign-in (one-time PIN, Google) cannot be completed inside an app, so Access needs the service token.
+The service token row is for signing in without any browser step (it never expires like a cookie does).
 
 ## Run it
 

@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { DataProvider, useData } from './src/data';
 import { useTheme } from './src/theme';
 import ConnectScreen from './src/screens/Connect';
+import LoginScreen from './src/screens/Login';
 import ListScreen from './src/screens/List';
 import DetailScreen from './src/screens/Detail';
 
@@ -19,6 +20,7 @@ function Root() {
     <Stack.Screen name="Bots" component={ListScreen} options={{ title: 'Bots' }} />
     <Stack.Screen name="Bot" component={DetailScreen} options={{ title: '' }} />
     <Stack.Screen name="Connect" component={ConnectScreen} options={{ title: 'Server' }} />
+    <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'Sign in' }} />
   </Stack.Navigator>;
 }
 

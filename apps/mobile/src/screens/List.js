@@ -85,7 +85,7 @@ function WatchRow({ v }) {
 }
 
 export default function ListScreen({ navigation }) {
-  const t = useTheme(), { S, load } = useData();
+  const t = useTheme(), { S, load, conn } = useData();
   const [tab, setTab] = useState('bots'), [refreshing, setRefreshing] = useState(false);
   useLayoutEffect(() => {
     navigation.setOptions({ headerRight: () => <Pressable onPress={() => navigation.navigate('Connect')} hitSlop={10}><Text style={{ color: t.accent, fontSize: 15 }}>Server</Text></Pressable> });
@@ -94,6 +94,7 @@ export default function ListScreen({ navigation }) {
   const stale = S.lastOk && Date.now() - S.lastOk > 45e3;
 
   return <ScrollView style={{ backgroundColor: t.page }} contentContainerStyle={{ padding: 12, gap: 12 }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}>
+    {S.error && S.error.kind === 'auth' && conn && conn.mode === 'browser' ? <Button primary onPress={() => navigation.navigate('Login')}>Sign in again</Button> : null}
     {S.error ? <Banner tone="bad">{S.error.message}{S.lastOk ? ` Last update ${ago(S.lastOk)}.` : ''}</Banner> : stale ? <Banner>Offline · last update {ago(S.lastOk)}</Banner> : null}
     <View style={[s.seg, { backgroundColor: t.chip }]}>
       {[['bots', `Bots (${S.bots.length})`], ['alerts', `Alerts (${S.watches.length})`]].map(([k, l]) =>

@@ -18,6 +18,8 @@ const path = require('path');
   assert.strictEqual(h['CF-Access-Client-Id'], 'id.access'); assert.strictEqual(h['CF-Access-Client-Secret'], 's3');
   assert.strictEqual(h['Content-Type'], 'application/json');
   assert.deepStrictEqual(Object.keys(api.headersFor({ user: '', pass: '' })), ['Accept']);
+  // signed in through the in-app browser: no password or token headers, the cookie does the work
+  assert.deepStrictEqual(Object.keys(api.headersFor({ mode: 'browser', user: 'admin', pass: 'x', cfId: 'i', cfSecret: 's' })), ['Accept']);
 
   // requests against a fake server
   const reply = (status, body, ct = 'application/json; charset=utf-8', redirected = false) => ({ status, ok: status < 400, redirected, headers: { get: () => ct }, json: async () => body });
@@ -26,6 +28,7 @@ const path = require('path');
   globalThis.fetch = async (url, opts) => { seen = { url, opts }; return reply(200, { bots: [1] }); };
   assert.deepStrictEqual(await api.request(conn, '/api/bots'), { bots: [1] });
   assert.strictEqual(seen.url, 'https://srv.test/api/bots'); assert.strictEqual(seen.opts.method, 'GET'); assert.strictEqual(seen.opts.body, undefined);
+  assert.strictEqual(seen.opts.credentials, 'include'); // cookies from the in-app browser sign-in travel with every request
   await api.request(conn, '/api/stop-all', { method: 'POST', body: { on: true } });
   assert.strictEqual(seen.opts.body, '{"on":true}');
 

@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 
 const KEY = 'connection';
-const EMPTY = { url: '', user: '', pass: '', cfId: '', cfSecret: '' };
+const EMPTY = { url: '', user: '', pass: '', cfId: '', cfSecret: '', mode: '' };
 
 export async function loadConnection() {
   try {

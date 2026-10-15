@@ -32,7 +32,7 @@ export function DataProvider({ children }) {
   const api = useMemo(() => ({
     conn, S, load,
     connect: async c => { await saveConnection(c); setS(s => ({ ...s, loading: true, error: null })); setConn(c); },
-    disconnect: async () => { await clearConnection(); setConn({ url: '', user: '', pass: '', cfId: '', cfSecret: '' }); setS(s => ({ ...s, bots: [], watches: [], accounts: {}, lastOk: 0, error: null })); },
+    disconnect: async () => { await clearConnection(); setConn({ url: '', user: '', pass: '', cfId: '', cfSecret: '', mode: '' }); setS(s => ({ ...s, bots: [], watches: [], accounts: {}, lastOk: 0, error: null })); },
     post: (path, body) => request(connRef.current, path, { method: 'POST', body: body || {} }),
   }), [conn, S, load]);
   return <Ctx.Provider value={api}>{children}</Ctx.Provider>;

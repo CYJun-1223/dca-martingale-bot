@@ -2,6 +2,7 @@
 // Sign-in options (use what your server needs):
 //   user + password   the dashboard's own login (WEB_USER / WEB_PASSWORD), sent as HTTP Basic
 //   cfId + cfSecret   a Cloudflare Access service token, for a server behind Cloudflare Access
+//   mode 'browser'    sign in once in the in-app browser (Cloudflare page, email, code); the phone keeps the cookie and every request carries it
 const b64 = s => {
   if (typeof btoa === 'function') return btoa(unescape(encodeURIComponent(s)));
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -22,6 +23,7 @@ export const cleanUrl = u => {
 export function headersFor(c, json = false) {
   const h = { Accept: 'application/json' };
   if (json) h['Content-Type'] = 'application/json';
+  if (c.mode === 'browser') return h; // signed in through the in-app browser (Cloudflare Access): the session cookie does the work
   if (c.user || c.pass) h.Authorization = `Basic ${b64(`${c.user}:${c.pass}`)}`;
   if (c.cfId && c.cfSecret) { h['CF-Access-Client-Id'] = c.cfId; h['CF-Access-Client-Secret'] = c.cfSecret; }
   return h;
@@ -37,7 +39,7 @@ export async function request(conn, path, { method = 'GET', body, timeout = 1500
   const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), timeout);
   let r;
   try {
-    r = await fetch(base + path, { method, headers: headersFor(conn, body !== undefined), body: body === undefined ? undefined : JSON.stringify(body), signal: ctl.signal });
+    r = await fetch(base + path, { method, credentials: 'include', headers: headersFor(conn, body !== undefined), body: body === undefined ? undefined : JSON.stringify(body), signal: ctl.signal });
   } catch (e) {
     throw new ApiError(e.name === 'AbortError' ? 'The server did not answer in time.' : 'Cannot reach the server. Check the address and your connection.', 'network');
   } finally { clearTimeout(timer); }

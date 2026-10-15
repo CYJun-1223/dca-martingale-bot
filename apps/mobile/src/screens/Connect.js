@@ -23,8 +23,14 @@ export default function ConnectScreen({ navigation }) {
   const set = k => v => setF(x => ({ ...x, [k]: v }));
   const connected = !!(conn && conn.url) && !S.error && S.lastOk > 0;
 
+  const browserSignIn = async () => {
+    const c = { ...f, url: cleanUrl(f.url), user: '', pass: '', cfId: '', cfSecret: '', mode: 'browser' };
+    await connect(c);
+    navigation.navigate('Login');
+  };
+
   const save = async () => {
-    const c = { ...f, url: cleanUrl(f.url) };
+    const c = { ...f, url: cleanUrl(f.url), mode: '' };
     setBusy(true); setMsg(null);
     try {
       const d = await request(c, '/api/bots', { timeout: 12000 });
@@ -40,6 +46,11 @@ export default function ConnectScreen({ navigation }) {
       <Faint>Enter the address of your dashboard (the page you open in the browser). The app shows the same bots and lets you start, stop and pause them.</Faint>
       <Card style={{ gap: 12 }}>
         <Field label="Server address" value={f.url} onChange={set('url')} placeholder="https://bots.example.com" keyboard="url" />
+        <Button primary disabled={busy || !f.url.trim()} onPress={browserSignIn}>Sign in with browser (Cloudflare email code)</Button>
+        <Faint>Same as opening the dashboard in a browser: Cloudflare page, your email, the code. Use this for your public https address.</Faint>
+      </Card>
+      <Text style={{ color: t.ink2, textAlign: 'center' }}>or, with a password / token</Text>
+      <Card style={{ gap: 12 }}>
         <Field label="User" value={f.user} onChange={set('user')} placeholder="admin" hint="The dashboard login (WEB_USER). Leave empty if the server has none." />
         <Field label="Password" value={f.pass} onChange={set('pass')} secure hint="WEB_PASSWORD from the bot's .env file." />
       </Card>
