@@ -39,13 +39,13 @@
   main { max-width:1120px; margin:0 auto; padding:20px; display:grid; gap:16px; }
 
   /* ---- overview ---- */
-  .overview { display:grid; grid-template-columns:minmax(220px, 1.3fr) repeat(4, minmax(120px, 1fr)); gap:12px; }
-  @media (max-width:820px) { .overview { grid-template-columns:repeat(2, 1fr); } .overview .hero { grid-column:1 / -1; } }
+  .overview { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap:12px; } /* account + P&L: equal columns, one column when narrow */
+  .overview .tile { min-width:0; }
   .tile { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:14px 16px; box-shadow:var(--shadow); }
   .tile .label { font-size:12px; color:var(--ink2); }
   .tile .value { font-size:22px; font-weight:600; margin-top:2px; }
   .tile .sub { font-size:12px; color:var(--ink3); }
-  .hero .value { font-size:48px; line-height:1.1; letter-spacing:-.02em; }
+  .hero .value { font-size:clamp(30px, 5vw, 44px); line-height:1.1; letter-spacing:-.02em; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
 
   /* ---- bot card ---- */
   .bot { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden; }
@@ -391,9 +391,8 @@
     .top-in { padding:10px 14px; gap:8px; }
     #tg { display:none; }
     main { padding:12px; gap:12px; }
-    .overview { grid-template-columns:repeat(2, 1fr); gap:8px; }
+    .overview { grid-template-columns:1fr; gap:8px; }
     .overview .tile { padding:10px 12px; }
-    .hero .value { font-size:36px; }
     .botrow { padding:12px 14px; }
     .botrow .kpis { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:8px; text-align:left; }
     .botrow .kpi .v { font-size:15px; }
