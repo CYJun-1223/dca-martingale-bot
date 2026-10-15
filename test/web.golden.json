@@ -1,0 +1,2830 @@
+[
+ {
+  "mode": "edit",
+  "results": [
+   {
+    "label": "app: index page",
+    "request": "GET /",
+    "status": 200,
+    "headers": {
+     "content-type": "text/html; charset=utf-8",
+     "cache-control": "no-cache"
+    },
+    "body": "<html>dashboard</html>"
+   },
+   {
+    "label": "app: manifest without login",
+    "request": "GET /manifest.webmanifest",
+    "status": 200,
+    "headers": {
+     "content-type": "application/manifest+json",
+     "cache-control": "no-cache"
+    },
+    "body": "{\"name\":\"test\"}"
+   },
+   {
+    "label": "app: icon without login",
+    "request": "GET /icon.svg",
+    "status": 200,
+    "headers": {
+     "content-type": "image/svg+xml",
+     "cache-control": "public, max-age=86400"
+    },
+    "body": "<svg xmlns=\"http://www.w3.org/2000/svg\"/>"
+   },
+   {
+    "label": "app: unknown hashed asset",
+    "request": "GET /assets/index-abc.js",
+    "status": 404,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "not found"
+    }
+   },
+   {
+    "label": "login: no credentials",
+    "request": "GET /api/bots",
+    "status": 401,
+    "headers": {
+     "www-authenticate": "Basic realm=\"bots\""
+    },
+    "body": "login required"
+   },
+   {
+    "label": "login: wrong password",
+    "request": "GET /api/bots",
+    "status": 401,
+    "headers": {
+     "www-authenticate": "Basic realm=\"bots\""
+    },
+    "body": "login required"
+   },
+   {
+    "label": "unknown GET",
+    "request": "GET /nope",
+    "status": 404,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "not found"
+    }
+   },
+   {
+    "label": "unknown POST",
+    "request": "POST /nope",
+    "status": 404,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "not found"
+    }
+   },
+   {
+    "label": "list at start",
+    "request": "GET /api/bots",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "accounts": {},
+     "bots": [
+      {
+       "alerts": [],
+       "armed": {},
+       "bot": {
+        "amountMult": 1,
+        "broker": "bitget",
+        "createdAt": "ISO",
+        "dryRun": true,
+        "enabled": true,
+        "entry": {
+         "groups": [],
+         "logic": "or",
+         "mode": "taker",
+         "volatility": null,
+         "window": 3
+        },
+        "fillMode": "auto",
+        "id": "t2",
+        "investment": 100,
+        "leverage": 3,
+        "marginMode": "crossed",
+        "maxAdds": 5,
+        "maxCycles": 0,
+        "name": "T2",
+        "stepMult": 1,
+        "stepPct": 1,
+        "symbol": "SMHUSDT",
+        "tf": "1H",
+        "tpPct": 2,
+        "usMarketHoursOnly": false
+       },
+       "checkTf": "15s",
+       "closing": null,
+       "contract": {
+        "minQty": 0.01,
+        "minValue": 5,
+        "pdp": 2,
+        "qdp": 2,
+        "step": 0.01
+       },
+       "enabled": true,
+       "firstMargin": 16.666666666666668,
+       "funding": {
+        "hours": 8,
+        "next": "MS",
+        "rate": 0.0001
+       },
+       "history": [],
+       "lastCheck": {
+        "price": 600,
+        "ts": "MS"
+       },
+       "lastSeen": "MS",
+       "log": [],
+       "manualOrders": [],
+       "pos": {
+        "avg": 600,
+        "cost": 60,
+        "id": 1,
+        "margin": 10,
+        "nextAdd": 594,
+        "openedAt": "ISO",
+        "orders": [
+         {
+          "margin": 10,
+          "n": 0,
+          "px": 600,
+          "qty": 0.1,
+          "ts": "MS"
+         }
+        ],
+        "plan": {
+         "adds": [
+          {
+           "k": 1,
+           "px": 594,
+           "qty": 0.11
+          }
+         ],
+         "maxAdds": 5
+        },
+        "pnlPct": 0,
+        "preview": [
+         {
+          "avg": 600,
+          "dropPct": 0,
+          "margin": 16.666666666666668,
+          "n": 0,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 600,
+          "tp": 612
+         },
+         {
+          "avg": 596.9849246231156,
+          "dropPct": 1,
+          "margin": 33.333333333333336,
+          "n": 1,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 594,
+          "tp": 608.9246231155779
+         },
+         {
+          "avg": 593.9595945854023,
+          "dropPct": 2,
+          "margin": 50,
+          "n": 2,
+          "notional": 45.37287428083994,
+          "orderMargin": 16.666666666666668,
+          "px": 588,
+          "tp": 605.8387864771104
+         },
+         {
+          "avg": 590.9238515889041,
+          "dropPct": 3,
+          "margin": 66.66666666666667,
+          "n": 3,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 582,
+          "tp": 602.7423286206822
+         },
+         {
+          "avg": 587.8775331661877,
+          "dropPct": 4,
+          "margin": 83.33333333333334,
+          "n": 4,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 576,
+          "tp": 599.6350838295115
+         },
+         {
+          "avg": 584.820472524718,
+          "dropPct": 5,
+          "margin": 100.00000000000001,
+          "n": 5,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 570,
+          "tp": 596.5168819752123
+         }
+        ],
+        "qty": 0.1,
+        "tp": 612,
+        "upnl": 0
+       },
+       "price": 600,
+       "resting": null,
+       "running": true,
+       "short": null,
+       "state": {
+        "closed": 0,
+        "realizedPnl": 0
+       },
+       "status": "running",
+       "upnl": 0
+      }
+     ],
+     "brokers": {
+      "binance": {
+       "label": "Binance",
+       "market": "USDT-M perpetual"
+      },
+      "bitget": {
+       "label": "Bitget",
+       "market": "USDT-M perpetual"
+      }
+     },
+     "defaults": "(config.js)",
+     "editable": true,
+     "liveEnabled": false,
+     "stopAll": false,
+     "strategies": [],
+     "telegram": false,
+     "watches": []
+    }
+   },
+   {
+    "label": "check symbol ok",
+    "request": "GET /api/check/SMHUSDT?broker=bitget&leverage=3",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "leverage": 3,
+     "maxLever": 25,
+     "message": "SMHUSDT is on Bitget, trading, price 600. Leverage 1 to 25x: 3x is allowed. Minimum order 0.01 (5 USDT).",
+     "minLever": 1,
+     "minQty": 0.01,
+     "minValue": 5,
+     "ok": true,
+     "price": 600,
+     "status": "normal",
+     "symbol": "SMHUSDT"
+    }
+   },
+   {
+    "label": "check symbol: leverage too high",
+    "request": "GET /api/check/SMHUSDT?broker=bitget&leverage=50",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "leverage": 50,
+     "maxLever": 25,
+     "message": "SMHUSDT exists on Bitget, but 50x is not allowed: leverage must be 1 to 25x.",
+     "minLever": 1,
+     "minQty": 0.01,
+     "minValue": 5,
+     "ok": false,
+     "price": 600,
+     "status": "normal",
+     "symbol": "SMHUSDT"
+    }
+   },
+   {
+    "label": "check symbol: unknown broker",
+    "request": "GET /api/check/SMHUSDT?broker=zzz&leverage=3",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "message": "unknown broker",
+     "ok": false
+    }
+   },
+   {
+    "label": "check symbol: missing query",
+    "request": "GET /api/check/SMHUSDT",
+    "status": 404,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "not found"
+    }
+   },
+   {
+    "label": "check symbol: not on exchange",
+    "request": "GET /api/check/NOPEUSDT?broker=bitget&leverage=3",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "message": "NOPEUSDT is not available on Bitget: Bitget 40309: The contract has been removed",
+     "ok": false
+    }
+   },
+   {
+    "label": "price default broker",
+    "request": "GET /api/price/SMHUSDT",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "contract": {
+      "minQty": 0.01,
+      "minValue": 5,
+      "pdp": 2,
+      "qdp": 2,
+      "step": 0.01
+     },
+     "price": 600
+    }
+   },
+   {
+    "label": "price bitget",
+    "request": "GET /api/price/SMHUSDT?broker=bitget",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "contract": {
+      "minQty": 0.01,
+      "minValue": 5,
+      "pdp": 2,
+      "qdp": 2,
+      "step": 0.01
+     },
+     "price": 600
+    }
+   },
+   {
+    "label": "create bot",
+    "request": "POST /api/bots",
+    "status": 201,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "amountMult": 1.1,
+     "broker": "bitget",
+     "createdAt": "ISO",
+     "dryRun": true,
+     "enabled": true,
+     "entry": {
+      "groups": [],
+      "logic": "or",
+      "mode": "taker",
+      "volatility": null,
+      "window": 3
+     },
+     "fillMode": "auto",
+     "id": "t1",
+     "investment": 150,
+     "leverage": 3,
+     "marginMode": "crossed",
+     "maxAdds": 5,
+     "maxCycles": 0,
+     "name": "T1",
+     "stepMult": 1,
+     "stepPct": 1,
+     "symbol": "SMHUSDT",
+     "tf": "1H",
+     "tpPct": 2,
+     "usMarketHoursOnly": false
+    }
+   },
+   {
+    "label": "create bot: duplicate id",
+    "request": "POST /api/bots",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "id \"t1\" already exists"
+    }
+   },
+   {
+    "label": "create bot: symbol not on exchange",
+    "request": "POST /api/bots",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "NOPEUSDT is not available on Bitget: Bitget 40309: The contract has been removed"
+    }
+   },
+   {
+    "label": "create bot: invalid",
+    "request": "POST /api/bots",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "investment must be a number from 1 to 10000000"
+    }
+   },
+   {
+    "label": "create bot: live refused while LIVE_TRADING is off",
+    "request": "POST /api/bots",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Live trading is off: set LIVE_TRADING=1 in .env and restart the runner and dashboard"
+    }
+   },
+   {
+    "label": "create bot: bad json",
+    "request": "POST /api/bots",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Expected property name or '}' in JSON at position 1 (line 1 column 2)"
+    }
+   },
+   {
+    "label": "list with bots",
+    "request": "GET /api/bots",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "accounts": {},
+     "bots": [
+      {
+       "alerts": [],
+       "armed": {},
+       "bot": {
+        "amountMult": 1,
+        "broker": "bitget",
+        "createdAt": "ISO",
+        "dryRun": true,
+        "enabled": true,
+        "entry": {
+         "groups": [],
+         "logic": "or",
+         "mode": "taker",
+         "volatility": null,
+         "window": 3
+        },
+        "fillMode": "auto",
+        "id": "t2",
+        "investment": 100,
+        "leverage": 3,
+        "marginMode": "crossed",
+        "maxAdds": 5,
+        "maxCycles": 0,
+        "name": "T2",
+        "stepMult": 1,
+        "stepPct": 1,
+        "symbol": "SMHUSDT",
+        "tf": "1H",
+        "tpPct": 2,
+        "usMarketHoursOnly": false
+       },
+       "checkTf": "15s",
+       "closing": null,
+       "contract": {
+        "minQty": 0.01,
+        "minValue": 5,
+        "pdp": 2,
+        "qdp": 2,
+        "step": 0.01
+       },
+       "enabled": true,
+       "firstMargin": 16.666666666666668,
+       "funding": {
+        "hours": 8,
+        "next": "MS",
+        "rate": 0.0001
+       },
+       "history": [],
+       "lastCheck": {
+        "price": 600,
+        "ts": "MS"
+       },
+       "lastSeen": "MS",
+       "log": [],
+       "manualOrders": [],
+       "pos": {
+        "avg": 600,
+        "cost": 60,
+        "id": 1,
+        "margin": 10,
+        "nextAdd": 594,
+        "openedAt": "ISO",
+        "orders": [
+         {
+          "margin": 10,
+          "n": 0,
+          "px": 600,
+          "qty": 0.1,
+          "ts": "MS"
+         }
+        ],
+        "plan": {
+         "adds": [
+          {
+           "k": 1,
+           "px": 594,
+           "qty": 0.11
+          }
+         ],
+         "maxAdds": 5
+        },
+        "pnlPct": 0,
+        "preview": [
+         {
+          "avg": 600,
+          "dropPct": 0,
+          "margin": 16.666666666666668,
+          "n": 0,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 600,
+          "tp": 612
+         },
+         {
+          "avg": 596.9849246231156,
+          "dropPct": 1,
+          "margin": 33.333333333333336,
+          "n": 1,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 594,
+          "tp": 608.9246231155779
+         },
+         {
+          "avg": 593.9595945854023,
+          "dropPct": 2,
+          "margin": 50,
+          "n": 2,
+          "notional": 45.37287428083994,
+          "orderMargin": 16.666666666666668,
+          "px": 588,
+          "tp": 605.8387864771104
+         },
+         {
+          "avg": 590.9238515889041,
+          "dropPct": 3,
+          "margin": 66.66666666666667,
+          "n": 3,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 582,
+          "tp": 602.7423286206822
+         },
+         {
+          "avg": 587.8775331661877,
+          "dropPct": 4,
+          "margin": 83.33333333333334,
+          "n": 4,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 576,
+          "tp": 599.6350838295115
+         },
+         {
+          "avg": 584.820472524718,
+          "dropPct": 5,
+          "margin": 100.00000000000001,
+          "n": 5,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 570,
+          "tp": 596.5168819752123
+         }
+        ],
+        "qty": 0.1,
+        "tp": 612,
+        "upnl": 0
+       },
+       "price": 600,
+       "resting": null,
+       "running": true,
+       "short": null,
+       "state": {
+        "closed": 0,
+        "realizedPnl": 0
+       },
+       "status": "running",
+       "upnl": 0
+      },
+      {
+       "alerts": [],
+       "armed": {},
+       "bot": {
+        "amountMult": 1.1,
+        "broker": "bitget",
+        "createdAt": "ISO",
+        "dryRun": true,
+        "enabled": true,
+        "entry": {
+         "groups": [],
+         "logic": "or",
+         "mode": "taker",
+         "volatility": null,
+         "window": 3
+        },
+        "fillMode": "auto",
+        "id": "t1",
+        "investment": 150,
+        "leverage": 3,
+        "marginMode": "crossed",
+        "maxAdds": 5,
+        "maxCycles": 0,
+        "name": "T1",
+        "stepMult": 1,
+        "stepPct": 1,
+        "symbol": "SMHUSDT",
+        "tf": "1H",
+        "tpPct": 2,
+        "usMarketHoursOnly": false
+       },
+       "checkTf": "15s",
+       "closing": null,
+       "contract": {
+        "minQty": 0.01,
+        "minValue": 5,
+        "pdp": 2,
+        "qdp": 2,
+        "step": 0.01
+       },
+       "enabled": true,
+       "firstMargin": 19.4411070544001,
+       "funding": {
+        "hours": 8,
+        "next": "MS",
+        "rate": 0.0001
+       },
+       "history": [],
+       "lastCheck": null,
+       "lastSeen": null,
+       "log": [],
+       "manualOrders": [],
+       "pos": null,
+       "price": 600,
+       "resting": null,
+       "running": false,
+       "short": null,
+       "state": null,
+       "status": "starting",
+       "upnl": 0
+      }
+     ],
+     "brokers": {
+      "binance": {
+       "label": "Binance",
+       "market": "USDT-M perpetual"
+      },
+      "bitget": {
+       "label": "Bitget",
+       "market": "USDT-M perpetual"
+      }
+     },
+     "defaults": "(config.js)",
+     "editable": true,
+     "liveEnabled": false,
+     "stopAll": false,
+     "strategies": [],
+     "telegram": false,
+     "watches": []
+    }
+   },
+   {
+    "label": "invest",
+    "request": "POST /api/bots/t1/invest",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "investment": 200
+    }
+   },
+   {
+    "label": "invest: zero",
+    "request": "POST /api/bots/t1/invest",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Enter an amount above 0."
+    }
+   },
+   {
+    "label": "invest: unknown bot",
+    "request": "POST /api/bots/zz/invest",
+    "status": 404,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "bot not found"
+    }
+   },
+   {
+    "label": "tp",
+    "request": "POST /api/bots/t1/tp",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "tpPct": 3
+    }
+   },
+   {
+    "label": "tp: invalid",
+    "request": "POST /api/bots/t1/tp",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "tpPct must be a number from 0.01 to 100"
+    }
+   },
+   {
+    "label": "tp: unknown bot",
+    "request": "POST /api/bots/zz/tp",
+    "status": 404,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "bot not found"
+    }
+   },
+   {
+    "label": "cycles",
+    "request": "POST /api/bots/t1/cycles",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "maxCycles": 5
+    }
+   },
+   {
+    "label": "cycles: same value",
+    "request": "POST /api/bots/t1/cycles",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Max cycles is already 5: choose more, or 0 for no limit."
+    }
+   },
+   {
+    "label": "cycles: lower",
+    "request": "POST /api/bots/t1/cycles",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Max cycles can only go up: more than 5, or 0 for no limit."
+    }
+   },
+   {
+    "label": "cycles: unknown bot",
+    "request": "POST /api/bots/zz/cycles",
+    "status": 404,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "bot not found"
+    }
+   },
+   {
+    "label": "maxadds quote",
+    "request": "GET /api/bots/t1/maxadds?to=8",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "current": 5,
+     "extra": 152.01,
+     "investment": 200,
+     "investmentAfter": 352.01,
+     "to": 8
+    }
+   },
+   {
+    "label": "maxadds quote: too high",
+    "request": "GET /api/bots/t1/maxadds?to=21",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Max add orders can only go up: choose 6 to 20."
+    }
+   },
+   {
+    "label": "maxadds quote: no target",
+    "request": "GET /api/bots/t1/maxadds",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Max add orders can only go up: choose 6 to 20."
+    }
+   },
+   {
+    "label": "maxadds apply",
+    "request": "POST /api/bots/t1/maxadds",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "current": 5,
+     "extra": 152.01,
+     "investment": 200,
+     "investmentAfter": 352.01,
+     "to": 8
+    }
+   },
+   {
+    "label": "maxadds apply: not higher",
+    "request": "POST /api/bots/t1/maxadds",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Max add orders can only go up: choose 9 to 20."
+    }
+   },
+   {
+    "label": "maxadds: unknown bot",
+    "request": "GET /api/bots/zz/maxadds?to=8",
+    "status": 404,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "bot not found"
+    }
+   },
+   {
+    "label": "manual market order",
+    "request": "POST /api/bots/t2/manual",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "queued": 1
+    }
+   },
+   {
+    "label": "manual limit order",
+    "request": "POST /api/bots/t2/manual",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "queued": 2
+    }
+   },
+   {
+    "label": "manual: no qty",
+    "request": "POST /api/bots/t2/manual",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Enter an amount above 0."
+    }
+   },
+   {
+    "label": "manual: limit without price",
+    "request": "POST /api/bots/t2/manual",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Enter a limit price above 0."
+    }
+   },
+   {
+    "label": "manual: cancel",
+    "request": "POST /api/bots/t2/manual",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "queued": 3
+    }
+   },
+   {
+    "label": "manual: typed fill",
+    "request": "POST /api/bots/t2/manual",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "queued": 4
+    }
+   },
+   {
+    "label": "manual: typed fill invalid",
+    "request": "POST /api/bots/t2/manual",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Enter the fill price and size from the exchange."
+    }
+   },
+   {
+    "label": "manual: unknown bot",
+    "request": "POST /api/bots/zz/manual",
+    "status": 404,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "bot not found"
+    }
+   },
+   {
+    "label": "action: close at price",
+    "request": "POST /api/bots/t2/action",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "queued": true
+    }
+   },
+   {
+    "label": "action: close at current price",
+    "request": "POST /api/bots/t2/action",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "That is the current price: choose now instead."
+    }
+   },
+   {
+    "label": "action: close now",
+    "request": "POST /api/bots/t2/action",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "queued": true
+    }
+   },
+   {
+    "label": "action: close with limit",
+    "request": "POST /api/bots/t2/action",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "queued": true
+    }
+   },
+   {
+    "label": "action: close limit without price",
+    "request": "POST /api/bots/t2/action",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Enter the limit price to sell at."
+    }
+   },
+   {
+    "label": "action: close hold",
+    "request": "POST /api/bots/t2/action",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "queued": true
+    }
+   },
+   {
+    "label": "action: stop at price",
+    "request": "POST /api/bots/t2/action",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "queued": true
+    }
+   },
+   {
+    "label": "action: bad price",
+    "request": "POST /api/bots/t2/action",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Enter a price above 0."
+    }
+   },
+   {
+    "label": "action: disarm",
+    "request": "POST /api/bots/t2/action",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "ok": true
+    }
+   },
+   {
+    "label": "action: disarm nothing",
+    "request": "POST /api/bots/t2/action",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Nothing to cancel."
+    }
+   },
+   {
+    "label": "action: unknown",
+    "request": "POST /api/bots/t2/action",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Unknown action."
+    }
+   },
+   {
+    "label": "action: unknown bot",
+    "request": "POST /api/bots/zz/action",
+    "status": 404,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "bot not found"
+    }
+   },
+   {
+    "label": "action: close on bot that is not running",
+    "request": "POST /api/bots/t1/action",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Start the bot first: it has to be running to place the closing order."
+    }
+   },
+   {
+    "label": "action: stop now",
+    "request": "POST /api/bots/t1/action",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "stopped": true
+    }
+   },
+   {
+    "label": "start",
+    "request": "POST /api/bots/t1/start",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "enabled": true
+    }
+   },
+   {
+    "label": "stop",
+    "request": "POST /api/bots/t1/stop",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "enabled": false
+    }
+   },
+   {
+    "label": "start: unknown bot",
+    "request": "POST /api/bots/zz/start",
+    "status": 404,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "bot not found"
+    }
+   },
+   {
+    "label": "edit bot",
+    "request": "PUT /api/bots/t1",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "amountMult": 1.1,
+     "broker": "bitget",
+     "createdAt": "ISO",
+     "dryRun": true,
+     "enabled": false,
+     "entry": {
+      "groups": [],
+      "logic": "or",
+      "mode": "taker",
+      "volatility": null,
+      "window": 3
+     },
+     "fillMode": "auto",
+     "id": "t1",
+     "investment": 150,
+     "leverage": 3,
+     "marginMode": "crossed",
+     "maxAdds": 5,
+     "maxCycles": 5,
+     "name": "Renamed",
+     "stepMult": 1,
+     "stepPct": 1,
+     "symbol": "SMHUSDT",
+     "tf": "1H",
+     "tpPct": 2,
+     "updatedAt": "ISO",
+     "usMarketHoursOnly": false
+    }
+   },
+   {
+    "label": "edit bot: change symbol while stopped",
+    "request": "PUT /api/bots/t1",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "amountMult": 1.1,
+     "broker": "bitget",
+     "createdAt": "ISO",
+     "dryRun": true,
+     "enabled": false,
+     "entry": {
+      "groups": [],
+      "logic": "or",
+      "mode": "taker",
+      "volatility": null,
+      "window": 3
+     },
+     "fillMode": "auto",
+     "id": "t1",
+     "investment": 150,
+     "leverage": 3,
+     "marginMode": "crossed",
+     "maxAdds": 5,
+     "maxCycles": 5,
+     "name": "T1",
+     "stepMult": 1,
+     "stepPct": 1,
+     "symbol": "SOXXUSDT",
+     "tf": "1H",
+     "tpPct": 2,
+     "updatedAt": "ISO",
+     "usMarketHoursOnly": false
+    }
+   },
+   {
+    "label": "edit bot: change symbol to unknown",
+    "request": "PUT /api/bots/t1",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "NOPEUSDT is not available on Bitget: Bitget 40309: The contract has been removed"
+    }
+   },
+   {
+    "label": "edit bot: unknown bot",
+    "request": "PUT /api/bots/zz",
+    "status": 404,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "no bot \"zz\""
+    }
+   },
+   {
+    "label": "edit running bot symbol",
+    "request": "PUT /api/bots/t2",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Stop the bot and wait for its open cycle to close before changing the symbol or leverage."
+    }
+   },
+   {
+    "label": "trades csv",
+    "request": "GET /api/bots/t2/trades.csv",
+    "status": 200,
+    "headers": {
+     "content-type": "text/csv; charset=utf-8",
+     "content-disposition": "attachment; filename=\"trades-t2.csv\""
+    },
+    "body": "time,symbol,cycle,action,order,qty,price,margin,avg_price,pnl,opened_at,held,mode\n2023-11-14 22:13,SMHUSDT,1,open,0,0.1,600,10,600,,,,alert\n"
+   },
+   {
+    "label": "trades csv: none yet",
+    "request": "GET /api/bots/t1/trades.csv",
+    "status": 404,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "no trades recorded yet"
+    }
+   },
+   {
+    "label": "trades csv: unknown bot",
+    "request": "GET /api/bots/zz/trades.csv",
+    "status": 404,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "no trades recorded yet"
+    }
+   },
+   {
+    "label": "stop all on",
+    "request": "POST /api/stop-all",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "stopAll": true
+    }
+   },
+   {
+    "label": "list shows stop all",
+    "request": "GET /api/bots",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "accounts": {},
+     "bots": [
+      {
+       "alerts": [],
+       "armed": {
+        "close": {
+         "how": "hold",
+         "now": true,
+         "queued": true
+        },
+        "stop": {
+         "dir": "down",
+         "px": 500,
+         "queued": true
+        }
+       },
+       "bot": {
+        "amountMult": 1,
+        "broker": "bitget",
+        "createdAt": "ISO",
+        "dryRun": true,
+        "enabled": true,
+        "entry": {
+         "groups": [],
+         "logic": "or",
+         "mode": "taker",
+         "volatility": null,
+         "window": 3
+        },
+        "fillMode": "auto",
+        "id": "t2",
+        "investment": 100,
+        "leverage": 3,
+        "marginMode": "crossed",
+        "maxAdds": 5,
+        "maxCycles": 0,
+        "name": "T2",
+        "stepMult": 1,
+        "stepPct": 1,
+        "symbol": "SMHUSDT",
+        "tf": "1H",
+        "tpPct": 2,
+        "usMarketHoursOnly": false
+       },
+       "checkTf": "15s",
+       "closing": null,
+       "contract": {
+        "minQty": 0.01,
+        "minValue": 5,
+        "pdp": 2,
+        "qdp": 2,
+        "step": 0.01
+       },
+       "enabled": true,
+       "firstMargin": 16.666666666666668,
+       "funding": {
+        "hours": 8,
+        "next": "MS",
+        "rate": 0.0001
+       },
+       "history": [],
+       "lastCheck": {
+        "price": 600,
+        "ts": "MS"
+       },
+       "lastSeen": "MS",
+       "log": [],
+       "manualOrders": [
+        {
+         "at": "MS",
+         "orderType": "market",
+         "px": null,
+         "qty": 1,
+         "queued": true,
+         "ref": "mMS",
+         "side": "buy",
+         "type": "manual"
+        },
+        {
+         "at": "MS",
+         "orderType": "limit",
+         "px": 650,
+         "qty": 0.5,
+         "queued": true,
+         "ref": "mMS",
+         "side": "sell",
+         "type": "manual"
+        }
+       ],
+       "pos": {
+        "avg": 600,
+        "cost": 60,
+        "id": 1,
+        "margin": 10,
+        "nextAdd": 594,
+        "openedAt": "ISO",
+        "orders": [
+         {
+          "margin": 10,
+          "n": 0,
+          "px": 600,
+          "qty": 0.1,
+          "ts": "MS"
+         }
+        ],
+        "plan": {
+         "adds": [
+          {
+           "k": 1,
+           "px": 594,
+           "qty": 0.11
+          }
+         ],
+         "maxAdds": 5
+        },
+        "pnlPct": 0,
+        "preview": [
+         {
+          "avg": 600,
+          "dropPct": 0,
+          "margin": 16.666666666666668,
+          "n": 0,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 600,
+          "tp": 612
+         },
+         {
+          "avg": 596.9849246231156,
+          "dropPct": 1,
+          "margin": 33.333333333333336,
+          "n": 1,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 594,
+          "tp": 608.9246231155779
+         },
+         {
+          "avg": 593.9595945854023,
+          "dropPct": 2,
+          "margin": 50,
+          "n": 2,
+          "notional": 45.37287428083994,
+          "orderMargin": 16.666666666666668,
+          "px": 588,
+          "tp": 605.8387864771104
+         },
+         {
+          "avg": 590.9238515889041,
+          "dropPct": 3,
+          "margin": 66.66666666666667,
+          "n": 3,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 582,
+          "tp": 602.7423286206822
+         },
+         {
+          "avg": 587.8775331661877,
+          "dropPct": 4,
+          "margin": 83.33333333333334,
+          "n": 4,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 576,
+          "tp": 599.6350838295115
+         },
+         {
+          "avg": 584.820472524718,
+          "dropPct": 5,
+          "margin": 100.00000000000001,
+          "n": 5,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 570,
+          "tp": 596.5168819752123
+         }
+        ],
+        "qty": 0.1,
+        "tp": 612,
+        "upnl": 0
+       },
+       "price": 600,
+       "resting": null,
+       "running": true,
+       "short": null,
+       "state": {
+        "closed": 0,
+        "realizedPnl": 0
+       },
+       "status": "running",
+       "upnl": 0
+      },
+      {
+       "alerts": [],
+       "armed": {},
+       "bot": {
+        "amountMult": 1.1,
+        "broker": "bitget",
+        "createdAt": "ISO",
+        "dryRun": true,
+        "enabled": false,
+        "entry": {
+         "groups": [],
+         "logic": "or",
+         "mode": "taker",
+         "volatility": null,
+         "window": 3
+        },
+        "fillMode": "auto",
+        "id": "t1",
+        "investment": 150,
+        "leverage": 3,
+        "marginMode": "crossed",
+        "maxAdds": 5,
+        "maxCycles": 5,
+        "name": "T1",
+        "stepMult": 1,
+        "stepPct": 1,
+        "symbol": "SOXXUSDT",
+        "tf": "1H",
+        "tpPct": 2,
+        "updatedAt": "ISO",
+        "usMarketHoursOnly": false
+       },
+       "checkTf": "15s",
+       "closing": null,
+       "contract": {
+        "minQty": 0.01,
+        "minValue": 5,
+        "pdp": 2,
+        "qdp": 2,
+        "step": 0.01
+       },
+       "enabled": false,
+       "firstMargin": 19.4411070544001,
+       "funding": {
+        "hours": 8,
+        "next": "MS",
+        "rate": 0.0001
+       },
+       "history": [],
+       "lastCheck": null,
+       "lastSeen": null,
+       "log": [],
+       "manualOrders": [],
+       "pos": null,
+       "price": 600,
+       "resting": null,
+       "running": false,
+       "short": null,
+       "state": null,
+       "status": "stopped",
+       "upnl": 0
+      }
+     ],
+     "brokers": {
+      "binance": {
+       "label": "Binance",
+       "market": "USDT-M perpetual"
+      },
+      "bitget": {
+       "label": "Bitget",
+       "market": "USDT-M perpetual"
+      }
+     },
+     "defaults": "(config.js)",
+     "editable": true,
+     "liveEnabled": false,
+     "stopAll": true,
+     "strategies": [],
+     "telegram": false,
+     "watches": []
+    }
+   },
+   {
+    "label": "stop all off",
+    "request": "POST /api/stop-all",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "stopAll": false
+    }
+   },
+   {
+    "label": "strategy: save",
+    "request": "POST /api/strategies",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "id": "my-strat",
+     "strategies": [
+      {
+       "id": "my-strat",
+       "name": "My Strat",
+       "params": {
+        "investment": 100,
+        "maxAdds": 4
+       }
+      }
+     ]
+    }
+   },
+   {
+    "label": "strategy: no name",
+    "request": "POST /api/strategies",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Give the strategy a name."
+    }
+   },
+   {
+    "label": "strategy: delete",
+    "request": "DELETE /api/strategies/my-strat",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "strategies": []
+    }
+   },
+   {
+    "label": "watch: create",
+    "request": "POST /api/watches",
+    "status": 201,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "broker": "bitget",
+     "createdAt": "ISO",
+     "enabled": true,
+     "entry": {
+      "groups": [
+       {
+        "logic": "or",
+        "signals": [
+         {
+          "mult": 2,
+          "period": 20,
+          "type": "boll-revert"
+         }
+        ]
+       }
+      ],
+      "logic": "or",
+      "volatility": null,
+      "window": 3
+     },
+     "id": "w1",
+     "name": "W1",
+     "symbol": "SMHUSDT",
+     "tf": "1H"
+    }
+   },
+   {
+    "label": "watch: duplicate",
+    "request": "POST /api/watches",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "id \"w1\" already exists"
+    }
+   },
+   {
+    "label": "watch: symbol not on exchange",
+    "request": "POST /api/watches",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "NOPEUSDT is not available on Bitget: Bitget 40309: The contract has been removed"
+    }
+   },
+   {
+    "label": "watch: edit",
+    "request": "PUT /api/watches/w1",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "broker": "bitget",
+     "createdAt": "ISO",
+     "enabled": true,
+     "entry": {
+      "groups": [
+       {
+        "logic": "or",
+        "signals": [
+         {
+          "mult": 2,
+          "period": 20,
+          "type": "boll-revert"
+         }
+        ]
+       }
+      ],
+      "logic": "or",
+      "volatility": null,
+      "window": 3
+     },
+     "id": "w1",
+     "name": "Renamed",
+     "symbol": "SMHUSDT",
+     "tf": "1H",
+     "updatedAt": "ISO"
+    }
+   },
+   {
+    "label": "watch: stop",
+    "request": "POST /api/watches/w1/stop",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "enabled": false
+    }
+   },
+   {
+    "label": "watch: start",
+    "request": "POST /api/watches/w1/start",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "enabled": true
+    }
+   },
+   {
+    "label": "watch: test message without Telegram",
+    "request": "POST /api/watches/w1/test",
+    "status": 400,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Telegram is not set up: add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID to .env and restart."
+    }
+   },
+   {
+    "label": "watch: unknown id",
+    "request": "PUT /api/watches/zz",
+    "status": 404,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "alert not found"
+    }
+   },
+   {
+    "label": "watch: unknown id start",
+    "request": "POST /api/watches/zz/start",
+    "status": 404,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "alert not found"
+    }
+   },
+   {
+    "label": "list with watch",
+    "request": "GET /api/bots",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "accounts": {},
+     "bots": [
+      {
+       "alerts": [],
+       "armed": {
+        "close": {
+         "how": "hold",
+         "now": true,
+         "queued": true
+        },
+        "stop": {
+         "dir": "down",
+         "px": 500,
+         "queued": true
+        }
+       },
+       "bot": {
+        "amountMult": 1,
+        "broker": "bitget",
+        "createdAt": "ISO",
+        "dryRun": true,
+        "enabled": true,
+        "entry": {
+         "groups": [],
+         "logic": "or",
+         "mode": "taker",
+         "volatility": null,
+         "window": 3
+        },
+        "fillMode": "auto",
+        "id": "t2",
+        "investment": 100,
+        "leverage": 3,
+        "marginMode": "crossed",
+        "maxAdds": 5,
+        "maxCycles": 0,
+        "name": "T2",
+        "stepMult": 1,
+        "stepPct": 1,
+        "symbol": "SMHUSDT",
+        "tf": "1H",
+        "tpPct": 2,
+        "usMarketHoursOnly": false
+       },
+       "checkTf": "15s",
+       "closing": null,
+       "contract": {
+        "minQty": 0.01,
+        "minValue": 5,
+        "pdp": 2,
+        "qdp": 2,
+        "step": 0.01
+       },
+       "enabled": true,
+       "firstMargin": 16.666666666666668,
+       "funding": {
+        "hours": 8,
+        "next": "MS",
+        "rate": 0.0001
+       },
+       "history": [],
+       "lastCheck": {
+        "price": 600,
+        "ts": "MS"
+       },
+       "lastSeen": "MS",
+       "log": [],
+       "manualOrders": [
+        {
+         "at": "MS",
+         "orderType": "market",
+         "px": null,
+         "qty": 1,
+         "queued": true,
+         "ref": "mMS",
+         "side": "buy",
+         "type": "manual"
+        },
+        {
+         "at": "MS",
+         "orderType": "limit",
+         "px": 650,
+         "qty": 0.5,
+         "queued": true,
+         "ref": "mMS",
+         "side": "sell",
+         "type": "manual"
+        }
+       ],
+       "pos": {
+        "avg": 600,
+        "cost": 60,
+        "id": 1,
+        "margin": 10,
+        "nextAdd": 594,
+        "openedAt": "ISO",
+        "orders": [
+         {
+          "margin": 10,
+          "n": 0,
+          "px": 600,
+          "qty": 0.1,
+          "ts": "MS"
+         }
+        ],
+        "plan": {
+         "adds": [
+          {
+           "k": 1,
+           "px": 594,
+           "qty": 0.11
+          }
+         ],
+         "maxAdds": 5
+        },
+        "pnlPct": 0,
+        "preview": [
+         {
+          "avg": 600,
+          "dropPct": 0,
+          "margin": 16.666666666666668,
+          "n": 0,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 600,
+          "tp": 612
+         },
+         {
+          "avg": 596.9849246231156,
+          "dropPct": 1,
+          "margin": 33.333333333333336,
+          "n": 1,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 594,
+          "tp": 608.9246231155779
+         },
+         {
+          "avg": 593.9595945854023,
+          "dropPct": 2,
+          "margin": 50,
+          "n": 2,
+          "notional": 45.37287428083994,
+          "orderMargin": 16.666666666666668,
+          "px": 588,
+          "tp": 605.8387864771104
+         },
+         {
+          "avg": 590.9238515889041,
+          "dropPct": 3,
+          "margin": 66.66666666666667,
+          "n": 3,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 582,
+          "tp": 602.7423286206822
+         },
+         {
+          "avg": 587.8775331661877,
+          "dropPct": 4,
+          "margin": 83.33333333333334,
+          "n": 4,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 576,
+          "tp": 599.6350838295115
+         },
+         {
+          "avg": 584.820472524718,
+          "dropPct": 5,
+          "margin": 100.00000000000001,
+          "n": 5,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 570,
+          "tp": 596.5168819752123
+         }
+        ],
+        "qty": 0.1,
+        "tp": 612,
+        "upnl": 0
+       },
+       "price": 600,
+       "resting": null,
+       "running": true,
+       "short": null,
+       "state": {
+        "closed": 0,
+        "realizedPnl": 0
+       },
+       "status": "running",
+       "upnl": 0
+      },
+      {
+       "alerts": [],
+       "armed": {},
+       "bot": {
+        "amountMult": 1.1,
+        "broker": "bitget",
+        "createdAt": "ISO",
+        "dryRun": true,
+        "enabled": false,
+        "entry": {
+         "groups": [],
+         "logic": "or",
+         "mode": "taker",
+         "volatility": null,
+         "window": 3
+        },
+        "fillMode": "auto",
+        "id": "t1",
+        "investment": 150,
+        "leverage": 3,
+        "marginMode": "crossed",
+        "maxAdds": 5,
+        "maxCycles": 5,
+        "name": "T1",
+        "stepMult": 1,
+        "stepPct": 1,
+        "symbol": "SOXXUSDT",
+        "tf": "1H",
+        "tpPct": 2,
+        "updatedAt": "ISO",
+        "usMarketHoursOnly": false
+       },
+       "checkTf": "15s",
+       "closing": null,
+       "contract": {
+        "minQty": 0.01,
+        "minValue": 5,
+        "pdp": 2,
+        "qdp": 2,
+        "step": 0.01
+       },
+       "enabled": false,
+       "firstMargin": 19.4411070544001,
+       "funding": {
+        "hours": 8,
+        "next": "MS",
+        "rate": 0.0001
+       },
+       "history": [],
+       "lastCheck": null,
+       "lastSeen": null,
+       "log": [],
+       "manualOrders": [],
+       "pos": null,
+       "price": 600,
+       "resting": null,
+       "running": false,
+       "short": null,
+       "state": null,
+       "status": "stopped",
+       "upnl": 0
+      }
+     ],
+     "brokers": {
+      "binance": {
+       "label": "Binance",
+       "market": "USDT-M perpetual"
+      },
+      "bitget": {
+       "label": "Bitget",
+       "market": "USDT-M perpetual"
+      }
+     },
+     "defaults": "(config.js)",
+     "editable": true,
+     "liveEnabled": false,
+     "stopAll": false,
+     "strategies": [],
+     "telegram": false,
+     "watches": [
+      {
+       "alerts": [],
+       "checkTf": "1H",
+       "enabled": true,
+       "lastCheck": null,
+       "lastSeen": null,
+       "nextCheck": "MS",
+       "price": 600,
+       "running": false,
+       "signals": [],
+       "status": "starting",
+       "watch": {
+        "broker": "bitget",
+        "createdAt": "ISO",
+        "enabled": true,
+        "entry": {
+         "groups": [
+          {
+           "logic": "or",
+           "signals": [
+            {
+             "mult": 2,
+             "period": 20,
+             "type": "boll-revert"
+            }
+           ]
+          }
+         ],
+         "logic": "or",
+         "volatility": null,
+         "window": 3
+        },
+        "id": "w1",
+        "name": "Renamed",
+        "symbol": "SMHUSDT",
+        "tf": "1H",
+        "updatedAt": "ISO"
+       }
+      }
+     ]
+    }
+   },
+   {
+    "label": "watch: delete",
+    "request": "DELETE /api/watches/w1",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "deleted": "w1"
+    }
+   },
+   {
+    "label": "delete bot: still enabled",
+    "request": "DELETE /api/bots/t2",
+    "status": 409,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "Stop the bot before deleting it."
+    }
+   },
+   {
+    "label": "delete bot: stopped",
+    "request": "DELETE /api/bots/t1",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "deleted": "t1"
+    }
+   },
+   {
+    "label": "delete bot: unknown",
+    "request": "DELETE /api/bots/zz",
+    "status": 404,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "no bot \"zz\""
+    }
+   },
+   {
+    "label": "stop t2",
+    "request": "POST /api/bots/t2/stop",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "enabled": false
+    }
+   },
+   {
+    "label": "delete bot: open cycle",
+    "request": "DELETE /api/bots/t2",
+    "status": 409,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "It still has an open cycle (#1). Wait until it closes."
+    }
+   },
+   {
+    "label": "list at end",
+    "request": "GET /api/bots",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "accounts": {},
+     "bots": [
+      {
+       "alerts": [],
+       "armed": {
+        "close": {
+         "how": "hold",
+         "now": true,
+         "queued": true
+        },
+        "stop": {
+         "dir": "down",
+         "px": 500,
+         "queued": true
+        }
+       },
+       "bot": {
+        "amountMult": 1,
+        "broker": "bitget",
+        "createdAt": "ISO",
+        "dryRun": true,
+        "enabled": false,
+        "entry": {
+         "groups": [],
+         "logic": "or",
+         "mode": "taker",
+         "volatility": null,
+         "window": 3
+        },
+        "fillMode": "auto",
+        "id": "t2",
+        "investment": 100,
+        "leverage": 3,
+        "marginMode": "crossed",
+        "maxAdds": 5,
+        "maxCycles": 0,
+        "name": "T2",
+        "stepMult": 1,
+        "stepPct": 1,
+        "symbol": "SMHUSDT",
+        "tf": "1H",
+        "tpPct": 2,
+        "updatedAt": "ISO",
+        "usMarketHoursOnly": false
+       },
+       "checkTf": "15s",
+       "closing": null,
+       "contract": {
+        "minQty": 0.01,
+        "minValue": 5,
+        "pdp": 2,
+        "qdp": 2,
+        "step": 0.01
+       },
+       "enabled": false,
+       "firstMargin": 16.666666666666668,
+       "funding": {
+        "hours": 8,
+        "next": "MS",
+        "rate": 0.0001
+       },
+       "history": [],
+       "lastCheck": {
+        "price": 600,
+        "ts": "MS"
+       },
+       "lastSeen": "MS",
+       "log": [],
+       "manualOrders": [
+        {
+         "at": "MS",
+         "orderType": "market",
+         "px": null,
+         "qty": 1,
+         "queued": true,
+         "ref": "mMS",
+         "side": "buy",
+         "type": "manual"
+        },
+        {
+         "at": "MS",
+         "orderType": "limit",
+         "px": 650,
+         "qty": 0.5,
+         "queued": true,
+         "ref": "mMS",
+         "side": "sell",
+         "type": "manual"
+        }
+       ],
+       "pos": {
+        "avg": 600,
+        "cost": 60,
+        "id": 1,
+        "margin": 10,
+        "nextAdd": 594,
+        "openedAt": "ISO",
+        "orders": [
+         {
+          "margin": 10,
+          "n": 0,
+          "px": 600,
+          "qty": 0.1,
+          "ts": "MS"
+         }
+        ],
+        "plan": {
+         "adds": [
+          {
+           "k": 1,
+           "px": 594,
+           "qty": 0.11
+          }
+         ],
+         "maxAdds": 5
+        },
+        "pnlPct": 0,
+        "preview": [
+         {
+          "avg": 600,
+          "dropPct": 0,
+          "margin": 16.666666666666668,
+          "n": 0,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 600,
+          "tp": 612
+         },
+         {
+          "avg": 596.9849246231156,
+          "dropPct": 1,
+          "margin": 33.333333333333336,
+          "n": 1,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 594,
+          "tp": 608.9246231155779
+         },
+         {
+          "avg": 593.9595945854023,
+          "dropPct": 2,
+          "margin": 50,
+          "n": 2,
+          "notional": 45.37287428083994,
+          "orderMargin": 16.666666666666668,
+          "px": 588,
+          "tp": 605.8387864771104
+         },
+         {
+          "avg": 590.9238515889041,
+          "dropPct": 3,
+          "margin": 66.66666666666667,
+          "n": 3,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 582,
+          "tp": 602.7423286206822
+         },
+         {
+          "avg": 587.8775331661877,
+          "dropPct": 4,
+          "margin": 83.33333333333334,
+          "n": 4,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 576,
+          "tp": 599.6350838295115
+         },
+         {
+          "avg": 584.820472524718,
+          "dropPct": 5,
+          "margin": 100.00000000000001,
+          "n": 5,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 570,
+          "tp": 596.5168819752123
+         }
+        ],
+        "qty": 0.1,
+        "tp": 612,
+        "upnl": 0
+       },
+       "price": 600,
+       "resting": null,
+       "running": false,
+       "short": null,
+       "state": {
+        "closed": 0,
+        "realizedPnl": 0
+       },
+       "status": "stopped",
+       "upnl": 0
+      }
+     ],
+     "brokers": {
+      "binance": {
+       "label": "Binance",
+       "market": "USDT-M perpetual"
+      },
+      "bitget": {
+       "label": "Bitget",
+       "market": "USDT-M perpetual"
+      }
+     },
+     "defaults": "(config.js)",
+     "editable": true,
+     "liveEnabled": false,
+     "stopAll": false,
+     "strategies": [],
+     "telegram": false,
+     "watches": []
+    }
+   },
+   {
+    "label": "app: file missing on disk",
+    "request": "GET /sw.js",
+    "status": 404,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "not found"
+    }
+   },
+   {
+    "label": "still alive afterwards",
+    "request": "GET /api/bots/t2/trades.csv",
+    "status": 200,
+    "headers": {
+     "content-type": "text/csv; charset=utf-8",
+     "content-disposition": "attachment; filename=\"trades-t2.csv\""
+    },
+    "body": "time,symbol,cycle,action,order,qty,price,margin,avg_price,pnl,opened_at,held,mode\n2023-11-14 22:13,SMHUSDT,1,open,0,0.1,600,10,600,,,,alert\n"
+   }
+  ]
+ },
+ {
+  "mode": "readonly",
+  "results": [
+   {
+    "label": "view-only: list",
+    "request": "GET /api/bots",
+    "status": 200,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "accounts": {},
+     "bots": [
+      {
+       "alerts": [],
+       "armed": {},
+       "bot": {
+        "amountMult": 1,
+        "broker": "bitget",
+        "createdAt": "ISO",
+        "dryRun": true,
+        "enabled": true,
+        "entry": {
+         "groups": [],
+         "logic": "or",
+         "mode": "taker",
+         "volatility": null,
+         "window": 3
+        },
+        "fillMode": "auto",
+        "id": "t2",
+        "investment": 100,
+        "leverage": 3,
+        "marginMode": "crossed",
+        "maxAdds": 5,
+        "maxCycles": 0,
+        "name": "T2",
+        "stepMult": 1,
+        "stepPct": 1,
+        "symbol": "SMHUSDT",
+        "tf": "1H",
+        "tpPct": 2,
+        "usMarketHoursOnly": false
+       },
+       "checkTf": "15s",
+       "closing": null,
+       "contract": {
+        "minQty": 0.01,
+        "minValue": 5,
+        "pdp": 2,
+        "qdp": 2,
+        "step": 0.01
+       },
+       "enabled": true,
+       "firstMargin": 16.666666666666668,
+       "funding": {
+        "hours": 8,
+        "next": "MS",
+        "rate": 0.0001
+       },
+       "history": [],
+       "lastCheck": {
+        "price": 600,
+        "ts": "MS"
+       },
+       "lastSeen": "MS",
+       "log": [],
+       "manualOrders": [],
+       "pos": {
+        "avg": 600,
+        "cost": 60,
+        "id": 1,
+        "margin": 10,
+        "nextAdd": 594,
+        "openedAt": "ISO",
+        "orders": [
+         {
+          "margin": 10,
+          "n": 0,
+          "px": 600,
+          "qty": 0.1,
+          "ts": "MS"
+         }
+        ],
+        "plan": {
+         "adds": [
+          {
+           "k": 1,
+           "px": 594,
+           "qty": 0.11
+          }
+         ],
+         "maxAdds": 5
+        },
+        "pnlPct": 0,
+        "preview": [
+         {
+          "avg": 600,
+          "dropPct": 0,
+          "margin": 16.666666666666668,
+          "n": 0,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 600,
+          "tp": 612
+         },
+         {
+          "avg": 596.9849246231156,
+          "dropPct": 1,
+          "margin": 33.333333333333336,
+          "n": 1,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 594,
+          "tp": 608.9246231155779
+         },
+         {
+          "avg": 593.9595945854023,
+          "dropPct": 2,
+          "margin": 50,
+          "n": 2,
+          "notional": 45.37287428083994,
+          "orderMargin": 16.666666666666668,
+          "px": 588,
+          "tp": 605.8387864771104
+         },
+         {
+          "avg": 590.9238515889041,
+          "dropPct": 3,
+          "margin": 66.66666666666667,
+          "n": 3,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 582,
+          "tp": 602.7423286206822
+         },
+         {
+          "avg": 587.8775331661877,
+          "dropPct": 4,
+          "margin": 83.33333333333334,
+          "n": 4,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 576,
+          "tp": 599.6350838295115
+         },
+         {
+          "avg": 584.820472524718,
+          "dropPct": 5,
+          "margin": 100.00000000000001,
+          "n": 5,
+          "notional": 45.372874280839945,
+          "orderMargin": 16.666666666666668,
+          "px": 570,
+          "tp": 596.5168819752123
+         }
+        ],
+        "qty": 0.1,
+        "tp": 612,
+        "upnl": 0
+       },
+       "price": 600,
+       "resting": null,
+       "running": true,
+       "short": null,
+       "state": {
+        "closed": 0,
+        "realizedPnl": 0
+       },
+       "status": "running",
+       "upnl": 0
+      }
+     ],
+     "brokers": {
+      "binance": {
+       "label": "Binance",
+       "market": "USDT-M perpetual"
+      },
+      "bitget": {
+       "label": "Bitget",
+       "market": "USDT-M perpetual"
+      }
+     },
+     "defaults": "(config.js)",
+     "editable": false,
+     "liveEnabled": false,
+     "stopAll": false,
+     "strategies": [],
+     "telegram": false,
+     "watches": []
+    }
+   },
+   {
+    "label": "view-only: index page",
+    "request": "GET /",
+    "status": 200,
+    "headers": {
+     "content-type": "text/html; charset=utf-8",
+     "cache-control": "no-cache"
+    },
+    "body": "<html>dashboard</html>"
+   },
+   {
+    "label": "view-only: create",
+    "request": "POST /api/bots",
+    "status": 403,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "dashboard is view-only"
+    }
+   },
+   {
+    "label": "view-only: stop all",
+    "request": "POST /api/stop-all",
+    "status": 403,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "dashboard is view-only"
+    }
+   },
+   {
+    "label": "view-only: edit",
+    "request": "PUT /api/bots/t2",
+    "status": 403,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "dashboard is view-only"
+    }
+   },
+   {
+    "label": "view-only: delete",
+    "request": "DELETE /api/bots/t2",
+    "status": 403,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "dashboard is view-only"
+    }
+   },
+   {
+    "label": "view-only: maxadds quote",
+    "request": "GET /api/bots/t2/maxadds?to=8",
+    "status": 403,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "dashboard is view-only"
+    }
+   },
+   {
+    "label": "view-only: csv download",
+    "request": "GET /api/bots/t2/trades.csv",
+    "status": 200,
+    "headers": {
+     "content-type": "text/csv; charset=utf-8",
+     "content-disposition": "attachment; filename=\"trades-t2.csv\""
+    },
+    "body": "time,symbol,cycle,action,order,qty,price,margin,avg_price,pnl,opened_at,held,mode\n2023-11-14 22:13,SMHUSDT,1,open,0,0.1,600,10,600,,,,alert\n"
+   },
+   {
+    "label": "view-only: unknown POST",
+    "request": "POST /nope",
+    "status": 403,
+    "headers": {
+     "content-type": "application/json; charset=utf-8",
+     "cache-control": "no-store"
+    },
+    "body": {
+     "error": "dashboard is view-only"
+    }
+   }
+  ]
+ }
+]

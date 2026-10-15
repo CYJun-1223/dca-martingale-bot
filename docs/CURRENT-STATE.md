@@ -1,6 +1,6 @@
 # Current state (tag `pre-framework` = c6e4b82)
 
-Updated 2026-10-08 after the React dashboard and the move to PostgreSQL. Node >= 22.12; runtime dependency: `pg` only (React / Vite are build-time).
+Updated 2026-10-15 (dashboard server split into routes / views / auth / env, see sections 1, 5, 7, 8); first written 2026-10-08 after the React dashboard and the move to PostgreSQL. Node >= 22.12; runtime dependency: `pg` only (React / Vite are build-time).
 Verified on 2026-10-08: `node test/units.js` -> "all 46 passed"; `node test/sim.js` -> "all invariants held".
 
 ## 1. File map
@@ -22,7 +22,11 @@ Verified on 2026-10-08: `node test/units.js` -> "all 46 passed"; `node test/sim.
 | `apps/server/bots.js` | 210 | bots + strategies registry (database), `validate`, `cfgFor`, `patch` |
 | `apps/server/watches.js` / `apps/server/watcher.js` | 69 / 86 | Alert-only watches: registry/validate / run loop (`runWatch` watcher.js:48) |
 | `apps/server/config.js` | 40 | Defaults every bot record overrides |
-| `apps/server/web.js` | 554 | Dashboard HTTP server: auth, JSON API, watchdog Telegram alert |
+| `apps/server/web.js` | 111 | Dashboard HTTP server: startup, login gate, static files, watchdog Telegram alert |
+| `apps/server/routes.js` / `router.js` | 283 / 48 | The JSON API as a route table (`buildRoutes`) / the tiny `Router` + `send` / `readBody` helpers |
+| `apps/server/views.js` | 197 | What the dashboard shows: price, contract, funding, symbol check, accounts, `botView`, `watchView` (read-only) |
+| `apps/server/auth.js` | 41 | Login: Basic auth or Cloudflare Access token |
+| `apps/server/env.js` | 15 | The one `.env` loader used by runner.js, web.js and bot.js |
 | `apps/server/dca.mjs` | 70 | The DCA order math (margins, drops from the entry, qty, rounding, minimums); the one copy used by `strategy.js` and the dashboard |
 | `apps/web/` (incl. `vite.config.mjs`) | - | Dashboard: React 19 + Vite, built by `npm run build` into `dist/` (gitignored) that web.js serves |
 | `apps/web/public/` | - | PWA files: manifest, icons, no-op `sw.js` (caches nothing) |
@@ -96,7 +100,9 @@ engine.js:
 8. Tracking saved before an order is sent; state written tmp + rename.
 9. Dashboard never writes state; only queues commands. STOP_ALL blocks every live order; `LIVE_TRADING=1` required.
 
-## 5. web.js HTTP API
+## 5. Dashboard HTTP API
+
+Since 2026-10-15 the routes live in `apps/server/routes.js` (registered through `router.js`); `web.js` only does login, view-only gating, static files and the 404. The line numbers below are from before that split and are kept only to show order. `test/web.js` pins down every answer (see section 7).
 
 "Edit" = returns 403 when started with `--readonly`. All except APP_FILES need auth. Errors -> 400 `{error}` (web.js:534).
 
@@ -141,16 +147,18 @@ Replaced the single-file `web.html` on 2026-10-08 (the old page is in git at tag
 - `node test/units.js`: 46 tests, offline, temp `STOP_FILE` (units.js:7). Covers check timing, executor sim/live refusal, size cap + STOP_ALL, Binance adapter mapping, live gating, alerts/bus, decide, plan math incl. reference table (units.js:150), entry AND/OR/windows, indicator correctness (RSI/MACD), validation, portion migration, manual orders, maxAdds raise, armed stop/close, min order + top-up, fees, watches, per-condition tf/volatility, entry modes, by-hand fills, resting orders (place, add fill moves TP, TP closes and cancels, settings change re-prices only diffs, pos.plan fixed), strategies, pause, close hold/limit/market.
 - `node test/sim.js [seed]`: real Engine vs fake exchange on synthetic prices; checks per tick: local vs exchange qty, not halted, orders <= maxAdds+1, qty sum, add px <= trigger, amount multiple, exit >= TP, pnl formula, one alert per fill.
 - `node test/parity.js`: dashboard preview (dca.mjs) == bot ladder (strategy.js), 243 settings + the reference table.
-- Not tested automatically: web.js routes, dashboard rendering (checked by hand in a browser), runner supervisor.
+- `node test/web.js`: starts the dashboard server from a temp copy of `apps/server` with an in-memory fake database and a fake exchange, sends 106 fixed HTTP requests (edit and `--readonly` mode, login, every API route, error cases) and compares each answer with `test/web.golden.json`. Never touches the real database, `runtime/` or `STOP_ALL`. `--record` rewrites the golden file after a deliberate change.
+- `node test/env.js`, `node test/router.js`: the `.env` format and the route matcher.
+- Not tested automatically: dashboard rendering (checked by hand in a browser), runner supervisor.
 
 ## 8. Pain points and refactor risks
 
 Pain points:
 - web.html is 1949 lines of CSS + markup + string-template JS with global state and manual `patch()` diffing; hard to change one screen safely.
 - DCA math duplicated in browser (section 6) with no parity test; already diverges for open cycles.
-- web.js is one regex-chain handler; edit gating, 404 lookup and validate-then-save repeated per route; `.env` loader duplicated with runner.js.
+- (fixed 2026-10-15) web.js was one regex-chain handler with the `.env` loader copied in three files; it is now route table + `withBot` helper + one `env.js`. Still repeated: validate-then-save in several routes.
 - (fixed 2026-10-08) Commands and settings now go through PostgreSQL transactions; no file IPC left.
-- No API/UI tests; `botView` does network calls per bot on every 15 s poll.
+- (fixed 2026-10-15) The API now has a characterization test (`test/web.js`, 106 requests); the UI still has none. `botView` does network calls per bot on every 15 s poll.
 - `bot.js` legacy CLI and `npm start` still point at the old single-bot path.
 
 Refactor risks:

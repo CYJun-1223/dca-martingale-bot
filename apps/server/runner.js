@@ -8,13 +8,7 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..', '..'), RUNTIME = path.join(ROOT, 'runtime'); // logs, traces and the STOP_ALL switch live in runtime/
 fs.mkdirSync(RUNTIME, { recursive: true });
 
-const envFile = path.join(ROOT, '.env');
-if (fs.existsSync(envFile)) {
-  for (const line of fs.readFileSync(envFile, 'utf8').split(/\r?\n/)) {
-    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
-    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '');
-  }
-}
+require('./env').loadEnv(ROOT); // .env -> process.env
 
 const { Bitget } = require('./bitget');
 const { Binance } = require('./binance');
