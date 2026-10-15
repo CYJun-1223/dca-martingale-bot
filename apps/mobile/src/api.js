@@ -37,7 +37,7 @@ export async function request(conn, path, { method = 'GET', body, timeout = 1500
   try {
     r = await fetch(base + path, { method, headers: headersFor(conn, body !== undefined), body: body === undefined ? undefined : JSON.stringify(body), signal: ctl.signal });
   } catch (e) {
-    throw new ApiError(e.name === 'AbortError' ? 'The server did not answer in time.' : 'Cannot reach the server. Check the address and your connection.', 'network');
+    throw new ApiError(e.name === 'AbortError' ? 'The server did not answer in time.' : `Cannot reach the server (${e.message || e}). Check the address and that Tailscale is on.`, 'network');
   } finally { clearTimeout(timer); }
   if (r.status === 401 || r.status === 403 || r.redirected) throw new ApiError('Signed out: check the user and password.', 'auth');
   const ct = r.headers.get('content-type') || '';
