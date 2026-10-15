@@ -24,7 +24,7 @@ The math lives in one file, `dca.mjs`, used by both the bot and the dashboard. A
    Keep PostgreSQL on localhost only (`listen_addresses = 'localhost'`).
 3. In this folder: `copy .env.example .env`, then fill in `DATABASE_URL`, `WEB_PASSWORD` and the exchange keys.
 4. `npm install`, then `npm run build` (builds the dashboard into `dist/`).
-5. `npm start` runs every enabled bot (`runner.js`); `npm run web` serves the dashboard on http://127.0.0.1:8787.
+5. `npm start` runs every enabled bot (`apps/server/runner.js`); `npm run web` serves the dashboard on http://127.0.0.1:8787.
    The tables are created on first start.
 
 Exchange keys: use a **sub-account** with **futures trade + read only, no withdrawal**. Live orders are refused unless
@@ -33,16 +33,27 @@ Exchange keys: use a **sub-account** with **futures trade + read only, no withdr
 ## Where things are
 | Part | Files |
 |---|---|
-| Runner (all bots + alert watches, one process) | `runner.js`, `engine.js` (one bot), `watcher.js` (one watch) |
-| Strategy | `strategy.js` (entry signals, ladder, decisions), `dca.mjs` (order math), `indicators.js` |
-| Exchanges | `bitget.js`, `binance.js`, `market.js`, `executor.js` |
-| Data | `db.js`: PostgreSQL tables `bots`, `strategies`, `watches`, `bot_state`, `watch_state`, `trades`, `commands` |
-| Dashboard | `web.js` (HTTP API + login), `ui/` (React 19 + Vite) |
-| Alerts | `alerts.js` (Telegram + log), `recorder.js` (trade ledger) |
-| Tools | `node bot.js check|trace|status|setup|alert [--bot=<id>]` |
+| Runner (all bots + alert watches, one process) | `apps/server/runner.js`, `apps/server/engine.js` (one bot), `apps/server/watcher.js` (one watch) |
+| Strategy | `apps/server/strategy.js` (entry signals, ladder, decisions), `apps/server/dca.mjs` (order math), `apps/server/indicators.js` |
+| Exchanges | `apps/server/bitget.js`, `apps/server/binance.js`, `apps/server/market.js`, `apps/server/executor.js` |
+| Data | `apps/server/db.js`: PostgreSQL tables `bots`, `strategies`, `watches`, `bot_state`, `watch_state`, `trades`, `commands` |
+| Dashboard | `apps/server/web.js` (HTTP API + login), `apps/web/` (React 19 + Vite) |
+| Alerts | `apps/server/alerts.js` (Telegram + log), `apps/server/recorder.js` (trade ledger) |
+| Tools | `node apps/server/bot.js check|trace|status|setup|alert [--bot=<id>]` |
 | Tests | `npm test`; `node test/db.js` against the database `soxxbot_test` |
 
-`CURRENT-STATE.md` describes the internals in detail.
+`docs/CURRENT-STATE.md` describes the internals in detail.
+
+## Folders
+
+```napps/server/ backend: runner, engine, web API, exchanges, db
+apps/web/    dashboard (React + Vite); src/, public/ (PWA files), dist/ (build)
+apps/mobile/ Android app (Capacitor)
+test/        npm test
+docs/        CURRENT-STATE.md
+tradingview/ Pine scripts
+runtime/     logs, indicator traces, STOP_ALL (gitignored, created on start)
+```
 
 ## Safety built in
 - Every order is saved to the database **before** it is sent. If the database can't be reached, nothing is sent.

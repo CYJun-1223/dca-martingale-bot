@@ -5,13 +5,13 @@ const path = require('path');
 const assert = require('assert');
 // never the real STOP_ALL: a running live bot would pause (and cancel its orders on the exchange)
 process.env.STOP_FILE = path.join(os.tmpdir(), `STOP_ALL-test-${process.pid}`);
-const S = require('../strategy');
-const { CHECK_TF, checkTfFor, nextCheckAt, TF_MS } = require('../market');
-const { createExecutor, SimExecutor } = require('../executor');
-const { Alerts, format } = require('../alerts');
-const { Bus } = require('../events');
-const bots = require('../bots');
-const base = require('../config');
+const S = require('../apps/server/strategy');
+const { CHECK_TF, checkTfFor, nextCheckAt, TF_MS } = require('../apps/server/market');
+const { createExecutor, SimExecutor } = require('../apps/server/executor');
+const { Alerts, format } = require('../apps/server/alerts');
+const { Bus } = require('../apps/server/events');
+const bots = require('../apps/server/bots');
+const base = require('../apps/server/config');
 
 const tests = [];
 const MG_INPUT = { id: 'x-1', symbol: 'BTCUSDT', tf: '4H', leverage: 3, investment: 500, maxAdds: 5, stepPct: 2, stepMult: 1.5, amountMult: 2, tpPct: 2,
@@ -46,7 +46,7 @@ test('executor: alert mode simulates, live is refused', async () => {
 });
 
 test('executor: live orders respect the size cap and STOP_ALL; closing skips the cap', async () => {
-  const { BitgetExecutor, STOP_FILE } = require('../executor');
+  const { BitgetExecutor, STOP_FILE } = require('../apps/server/executor');
   const sent = [];
   const api = { ticker: async () => ({ lastPr: '100' }), placeOrder: async b => sent.push(b),
     orderDetail: async () => ({ state: 'filled', baseVolume: '1', priceAvg: '100' }) };
@@ -63,7 +63,7 @@ test('executor: live orders respect the size cap and STOP_ALL; closing skips the
 });
 
 test('executor: Binance adapter sends Binance names and reads Binance replies', async () => {
-  const { BinanceExecutor } = require('../executor');
+  const { BinanceExecutor } = require('../apps/server/executor');
   const sent = [], orders = { f1: { orderId: 77, status: 'FILLED', executedQty: '0.5', avgPrice: '620.1', updateTime: 1791300000000 } };
   const api = { base: 'x', placeOrder: async b => sent.push(b),
     order: async (sym, cid) => { if (orders[cid]) return orders[cid]; const e = new Error('Binance -2013: Order does not exist.'); e.code = -2013; throw e; },
@@ -219,7 +219,7 @@ test('alerts: open / close events become readable messages with times', () => {
 });
 
 test('RSI matches Wilder / TA-Lib on the StockCharts example data', () => {
-  const { rsi } = require('../indicators');
+  const { rsi } = require('../apps/server/indicators');
   const c = [44.34, 44.09, 44.15, 43.61, 44.33, 44.83, 45.10, 45.42, 45.84, 46.08, 45.89, 46.03, 45.61, 46.28, 46.28, 46.00, 46.03, 46.41, 46.22, 45.64];
   const r = rsi(c, 14);
   assert.strictEqual(r[13], null);
@@ -228,7 +228,7 @@ test('RSI matches Wilder / TA-Lib on the StockCharts example data', () => {
 });
 
 test('MACD: line = EMA(fast) - EMA(slow), signal = EMA of the line, hist = difference', () => {
-  const { macd, ema } = require('../indicators');
+  const { macd, ema } = require('../apps/server/indicators');
   const c = Array.from({ length: 120 }, (_, i) => 100 + 10 * Math.sin(i / 9) + i * 0.1);
   const m = macd(c, 12, 26, 9), f = ema(c, 12), s = ema(c, 26);
   assert.strictEqual(m.line[24], null); assert.strictEqual(m.signal[32], null);
@@ -240,7 +240,7 @@ test('MACD: line = EMA(fast) - EMA(slow), signal = EMA of the line, hist = diffe
 });
 
 test('entry signals fire once, on the bar that crosses', () => {
-  const { macd, rsi } = require('../indicators');
+  const { macd, rsi } = require('../apps/server/indicators');
   // falling then rising prices: MACD golden cross and RSI leaving oversold both happen once
   const c = [...Array.from({ length: 80 }, (_, i) => 200 - i), ...Array.from({ length: 60 }, (_, i) => 120 + i * 1.5)];
   const fires = sig => c.map((_, i) => S.entrySignal(c.slice(0, i + 1), { logic: 'or', signals: [sig] })).map((x, i) => x ? i : -1).filter(i => i >= 0);
@@ -260,6 +260,8 @@ test('bots: each indicator validates its own fields', () => {
   assert.deepStrictEqual(ok({ type: 'rsi-cross', period: 14, level: 30 }), { type: 'rsi-cross', period: 14, level: 30 });
   assert.deepStrictEqual(ok({ type: 'ma-cross', ma: 'ema', fast: 20, slow: 50 }), { type: 'ma-cross', ma: 'ema', fast: 20, slow: 50 });
   assert.deepStrictEqual(ok({ type: 'boll-revert', period: 20, mult: 2.5 }), { type: 'boll-revert', period: 20, mult: 2.5 });
+  assert.deepStrictEqual(ok({ type: 'boll-reclaim', period: 20, mult: 2 }), { type: 'boll-reclaim', period: 20, mult: 2 });
+  assert.deepStrictEqual(ok({ type: 'boll-fade', period: 20, mult: 2 }), { type: 'boll-fade', period: 20, mult: 2 });
   assert.throws(() => ok({ type: 'macd-cross', fast: 26, slow: 12, signal: 9 }), /fast must be smaller/);
   assert.throws(() => ok({ type: 'rsi-cross', period: 14, level: 150 }), /level/);
   assert.throws(() => ok({ type: 'macd-cross', fast: 12, slow: 26 }), /signal/);
@@ -279,7 +281,7 @@ test('bots: martingale fields are validated', () => {
 });
 
 test('upgrading keeps open positions and history (old portion state -> martingale cycle)', () => {
-  const { Engine } = require('../engine');
+  const { Engine } = require('../apps/server/engine');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mig-'));
   const old = { seq: 3, lastBarTs: 123, realizedPnl: 12.5, halted: false, pending: null,
     portions: [{ id: 3, entryPx: 95, qty: 1, remaining: 1, openedAt: 2000 }, { id: 2, entryPx: 100, qty: 1, remaining: 0.4, openedAt: 1000, tp1Done: true }],
@@ -309,7 +311,7 @@ test('manual orders sit on top of the investment; planned adds follow the plan; 
   // an order that used more than planned changes nothing: every add stays A x amountMult^k
   assert.strictEqual(S.addMargin(cfg, { orders: [{ margin: 198.88 }] }, 5), S.marginFor(cfg, 5), 'adds are fixed');
   // ATR as % of price
-  const { atr } = require('../indicators');
+  const { atr } = require('../apps/server/indicators');
   const bars = Array.from({ length: 30 }, (_, i) => ({ h: 101, l: 99, c: 100 }));
   assert.ok(Math.abs(atr(bars, 14)[29] - 2) < 1e-9, 'constant 2-point range -> ATR 2');
   assert.strictEqual(S.volatilityCheck(bars, { period: 14, minPct: 1 }).ok, true);
@@ -321,7 +323,7 @@ test('manual orders sit on top of the investment; planned adds follow the plan; 
 });
 
 test('manual orders: market (taker) fills at the next check, limit (maker) waits; buy adds, sell reduces', async () => {
-  const { Engine } = require('../engine');
+  const { Engine } = require('../apps/server/engine');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'man-'));
   const cfg = { ...base, investment: 1000, maxAdds: 5, amountMult: 2, stepPct: 2, stepMult: 1, tpPct: 2, leverage: 2, logFile: 'bot-x.log' };
   const e = new Engine(cfg, { market: {}, executor: {} }, { dir, quiet: true });
@@ -370,7 +372,7 @@ test('raising max adds: the extra investment keeps every planned order at its si
 });
 
 test('armed close / stop fire when the price reaches the level; close sells the position and ends the bot', async () => {
-  const { Engine } = require('../engine');
+  const { Engine } = require('../apps/server/engine');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'arm-'));
   const cfg = { ...base, investment: 1000, maxAdds: 5, amountMult: 2, leverage: 2, logFile: 'bot-x.log' };
   const executor = { marketOrder: async ({ size }) => ({ px: 121, qty: size, done: true }), findOrder: async () => null };
@@ -402,7 +404,7 @@ test('minimum order margin and top-up; a too-small order is skipped with one not
   const up = S.topUpFor(cfg, null, 0, 10);
   assert.ok(Math.abs(S.firstMargin({ ...cfg, investment: cfg.investment + up }) - 10) < 1e-9, 'first order reaches the minimum');
   assert.strictEqual(S.topUpFor(cfg, null, 0, 1), 0, 'already enough');
-  const { Engine } = require('../engine');
+  const { Engine } = require('../apps/server/engine');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'short-'));
   const bus = new Bus(), seen = [];
   bus.subscribe(ev => seen.push(ev));
@@ -421,7 +423,7 @@ test('minimum order margin and top-up; a too-small order is skipped with one not
 });
 
 test('fees: every order and the exit keep the fee the exchange reported, else the standard rate for the order type', async () => {
-  const { Engine } = require('../engine');
+  const { Engine } = require('../apps/server/engine');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'fees-'));
   const cfg = { ...base, broker: 'bitget', investment: 1000, maxAdds: 5, amountMult: 1, leverage: 1, logFile: 'bot-f.log' };
   let reported = 0.123; // the exchange's fee for the next market fill; undefined = unknown
@@ -442,8 +444,8 @@ test('fees: every order and the exit keep the fee the exchange reported, else th
 });
 
 test('alert-only watch: silent on the first look, one message when the indicator fires on a new candle, none twice', async () => {
-  const { checkOnce } = require('../watcher');
-  const watches = require('../watches');
+  const { checkOnce } = require('../apps/server/watcher');
+  const watches = require('../apps/server/watches');
   const w = watches.validate({ id: 'w-x', name: 'W X', symbol: 'SOXXUSDT', tf: '1H', entry: { logic: 'or', window: 3, groups: [{ logic: 'or', signals: [{ type: 'boll-revert', period: 20, mult: 2 }] }] } }, []);
   assert.strictEqual(w.enabled, true);
   const flat = n => Array.from({ length: n }, (_, i) => ({ ts: (i + 1) * 3600e3, o: 100, h: 101, l: 99, c: 100 + (i % 2 ? 0.5 : -0.5), v: 1 }));
@@ -479,7 +481,7 @@ test('a condition can use its own K-line and volatility filter; it lands on the 
 });
 
 test('an alert looks once per candle of its shortest K-line', () => {
-  const watches = require('../watches');
+  const watches = require('../apps/server/watches');
   const mk = (tf, ...sigTfs) => watches.cfgFor({ id: 'w', tf, entry: { logic: 'or', window: 3, groups: [{ logic: 'or', signals: sigTfs.map(s => ({ type: 'rsi-cross', period: 14, level: 30, ...(s ? { tf: s } : {}) })) }] } });
   assert.strictEqual(watches.watchTf(mk('1H', null)), '1H', 'default K-line only');
   assert.strictEqual(watches.watchTf(mk('1H', null, '4H')), '1H', '1H default plus a 4H condition');
@@ -490,9 +492,9 @@ test('an alert looks once per candle of its shortest K-line', () => {
 });
 
 test('an alert is a flat list: one message per candle on which any indicator fires, naming the ones that fired', async () => {
-  const { checkOnce } = require('../watcher');
-  const watches = require('../watches');
-  const { boll } = require('../indicators');
+  const { checkOnce } = require('../apps/server/watcher');
+  const watches = require('../apps/server/watches');
+  const { boll } = require('../apps/server/indicators');
   const sig = mult => ({ type: 'boll-revert', period: 20, mult });
   // a list of conditions under one stock; groups from the editor are flattened and combined as OR
   const w = watches.validate({ id: 'w-y', name: 'W Y', symbol: 'SOXXUSDT', tf: '1H', entry: { logic: 'and', window: 3, groups: [{ logic: 'and', signals: [sig(2)] }, { logic: 'and', signals: [sig(1)] }] } }, []);
@@ -541,7 +543,7 @@ test('entry modes: taker opens at once, maker once price is at the limit, indica
 });
 
 test('by hand: advice once per order, then the real fills drive the ladder', () => {
-  const { Engine } = require('../engine');
+  const { Engine } = require('../apps/server/engine');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'hand-'));
   const bus = new Bus(), seen = [];
   bus.subscribe(ev => seen.push(ev));
@@ -585,7 +587,7 @@ class FakeLive {
   open(side, reduceOnly) { return [...this.orders.values()].filter(o => o.state === 'live' && o.side === side && (reduceOnly === undefined || (o.reduceOnly === 'YES' || o.reduceOnly === true) === reduceOnly)); }
 }
 function restingBot(mod = {}) {
-  const { Engine } = require('../engine');
+  const { Engine } = require('../apps/server/engine');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rest-'));
   const cfg = { ...base, dryRun: false, fillMode: 'auto', leverage: 10, investment: 150, maxAdds: 20, stepPct: 0.85, stepMult: 1.02, amountMult: 1.12, tpPct: 2.55,
     entry: { mode: 'taker' }, logFile: 'bot-x.log', ...mod };
@@ -751,7 +753,7 @@ test('strategies: the first-order mode is kept; the limit price and whether it f
 });
 
 test('pause trading: every resting order is cancelled once, nothing is placed while paused, resume places the ladder again', async () => {
-  const { STOP_FILE } = require('../executor');
+  const { STOP_FILE } = require('../apps/server/executor');
   const { e, ex } = restingBot();
   await e.tick();
   const resting = ex.open('buy').length + ex.open('sell').length;

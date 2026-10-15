@@ -5,9 +5,8 @@
 # installed / built
 node_modules/
 dist/
-# written while the bots run: logs, indicator traces, the pause switch
+# written while the bots run: runtime/ = logs, indicator traces, the pause switch
 *.log
-trace/
-STOP_ALL
+runtime/
 # browser test output
 .playwright-mcp/

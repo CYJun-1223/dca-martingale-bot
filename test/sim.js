@@ -4,12 +4,12 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { Engine } = require('../engine');
-const S = require('../strategy');
-const baseCfg = require('../config');
-const { Alerts } = require('../alerts');
-const { Recorder } = require('../recorder');
-const { Bus } = require('../events');
+const { Engine } = require('../apps/server/engine');
+const S = require('../apps/server/strategy');
+const baseCfg = require('../apps/server/config');
+const { Alerts } = require('../apps/server/alerts');
+const { Recorder } = require('../apps/server/recorder');
+const { Bus } = require('../apps/server/events');
 
 let seed = +(process.argv[2] || 7);
 const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);

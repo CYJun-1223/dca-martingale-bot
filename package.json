@@ -3,27 +3,31 @@
   "version": "1.0.0",
   "private": true,
   "description": "DCA martingale bots for Bitget / Binance USDT-M futures, with a phone dashboard",
-  "main": "runner.js",
+  "main": "apps/server/runner.js",
   "engines": {
     "node": ">=22.12"
   },
   "scripts": {
-    "check": "node bot.js check",
-    "trace": "node bot.js trace",
-    "status": "node bot.js status",
-    "start": "node runner.js",
-    "web": "node web.js",
+    "check": "node apps/server/bot.js check",
+    "trace": "node apps/server/bot.js trace",
+    "status": "node apps/server/bot.js status",
+    "start": "node apps/server/runner.js",
+    "web": "node apps/server/web.js",
     "test": "node test/units.js && node test/sim.js && node test/parity.js && node test/db.js",
-    "build": "vite build",
-    "dev:ui": "vite"
+    "build": "vite build apps/web",
+    "dev:ui": "vite apps/web"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.3",
     "@vitejs/plugin-react": "^6.1.2",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "vite": "^8.3.3"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/push-notifications": "^8.1.3",
     "pg": "^8.23.1"
   }
 }

@@ -8,10 +8,10 @@ for (const line of fs.existsSync(envFile) ? fs.readFileSync(envFile, 'utf8').spl
 }
 if (!process.env.DATABASE_URL) { console.log('db: skipped (no DATABASE_URL)'); process.exit(0); }
 process.env.DATABASE_URL = process.env.DATABASE_URL.replace(/\/[^/?]+(\?|$)/, '/soxxbot_test$1');
-const db = require('../db');
-const { Engine } = require('../engine');
-const { Recorder, toCsv, HEADER } = require('../recorder');
-const { Bus } = require('../events');
+const db = require('../apps/server/db');
+const { Engine } = require('../apps/server/engine');
+const { Recorder, toCsv, HEADER } = require('../apps/server/recorder');
+const { Bus } = require('../apps/server/events');
 
 (async () => {
   await db.migrate();

@@ -2,8 +2,8 @@
 // dca.mjs too, plus its own live ladder). Check the preview equals what the bot places, across many settings and prices.
 // Run: node test/parity.js
 const assert = require('assert');
-const S = require('../strategy');
-const D = require('../dca.mjs'); // what the dashboard imports
+const S = require('../apps/server/strategy');
+const D = require('../apps/server/dca.mjs'); // what the dashboard imports
 
 const down = (x, d) => Math.floor(x * 10 ** d + 1e-9) / 10 ** d;
 const c = { step: 0.01, qdp: 2, pdp: 2, minQty: 0.01, minValue: 5 };
