@@ -13,21 +13,17 @@
     "status": "node apps/server/bot.js status",
     "start": "node apps/server/runner.js",
     "web": "node apps/server/web.js",
-    "test": "node test/units.js && node test/sim.js && node test/parity.js && node test/env.js && node test/router.js && node test/lock.js && node test/web.js && node test/db.js",
+    "test": "node test/units.js && node test/sim.js && node test/parity.js && node test/env.js && node test/router.js && node test/lock.js && node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON test/mobile.js && node test/web.js && node test/db.js",
     "build": "vite build apps/web",
     "dev:ui": "vite apps/web"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.5.3",
     "@vitejs/plugin-react": "^6.1.2",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "vite": "^8.3.3"
   },
   "dependencies": {
-    "@capacitor/android": "^8.5.3",
-    "@capacitor/core": "^8.5.3",
-    "@capacitor/push-notifications": "^8.1.3",
     "pg": "^8.23.1"
   }
 }

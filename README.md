@@ -48,7 +48,7 @@ Exchange keys: use a **sub-account** with **futures trade + read only, no withdr
 
 ```napps/server/ backend: runner, engine, web API, exchanges, db
 apps/web/    dashboard (React + Vite); src/, public/ (PWA files), dist/ (build)
-apps/mobile/ Android app (Capacitor)
+apps/mobile/ phone app (Expo / React Native): monitor and start/stop the bots; see apps/mobile/README.md
 test/        npm test
 docs/        CURRENT-STATE.md
 tradingview/ Pine scripts

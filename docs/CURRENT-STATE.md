@@ -30,6 +30,7 @@ Re-verified on 2026-10-15 (after the apps/ restructure and the web split): `test
 | `apps/server/dca.mjs` | 70 | The DCA order math (margins, drops from the entry, qty, rounding, minimums); the one copy used by `strategy.js` and the dashboard |
 | `apps/web/` (incl. `vite.config.mjs`) | - | Dashboard: React 19 + Vite, built by `npm run build` into `dist/` (gitignored) that web.js serves |
 | `apps/web/public/` | - | PWA files: manifest, icons, no-op `sw.js` (caches nothing) |
+| `apps/mobile/` | – | Phone app (Expo / React Native, replaces the old Capacitor wrapper): Connect, bot list, bot page, start/stop/pause. Talks to the same JSON API as the dashboard; imports `apps/web/src/lib/*` and `apps/server/dca.mjs`. See `apps/mobile/README.md` |
 | `test/units.js`, `test/sim.js` | 835/118 | Tests (section 7) |
 | `tradingview/*.pine` | - | Pine scripts mirroring the ladder/entry for TradingView alerts; not loaded by Node |
 
